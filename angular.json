@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "projects": {
+    "CementAgency": "apps/CementAgency",
+    "future-tech-lib": "libs/future-tech-lib"
+  },
+  "cli": {
+    "analytics": "1bdd26cd-d380-43a8-9bfc-62bd13262691"
+  }
+}
