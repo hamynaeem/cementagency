@@ -28,7 +28,7 @@ export class HttpBase {
 
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'apis/' + table, { headers: this.jwt(), params })
+        .get(this.apiUrl + table, { headers: this.jwt(), params })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -50,7 +50,7 @@ export class HttpBase {
 
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'tasks/' + ApiEndPoint, {
+        .get(this.apiUrl.replace('/apis/', '/') + 'tasks/' + ApiEndPoint, {
           headers: this.jwt(),
           params,
         })
@@ -68,7 +68,7 @@ export class HttpBase {
   Delete(table: string, id: string) {
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'apis/delete/' + table + '/' + id, {
+        .get(this.apiUrl + 'delete/' + table + '/' + id, {
           headers: this.jwt(),
         })
         .subscribe({
@@ -101,7 +101,7 @@ export class HttpBase {
   delTask(table, id) {
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'tasks/' + table + '/' + id, { headers: this.jwt() })
+        .get(this.apiUrl.replace('/apis/', '/') + 'tasks/' + table + '/' + id, { headers: this.jwt() })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -121,7 +121,7 @@ export class HttpBase {
       headers.append('Content-Type', 'application/json');
 
       this.http
-        .post(this.apiUrl + 'apis/' + url, data, { headers: this.jwt() })
+        .post(this.apiUrl + url, data, { headers: this.jwt() })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -184,7 +184,7 @@ export class HttpBase {
       data.BusinessID = this.getBusinessID();
 
       this.http
-        .post(this.apiUrl + 'tasks/' + url, data, {
+        .post(this.apiUrl.replace('/apis/', '/') + 'tasks/' + url, data, {
           headers: this.jwt(),
           params,
         })

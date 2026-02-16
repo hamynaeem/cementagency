@@ -27,10 +27,10 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
 
   hideSidebar: boolean = true;
   overlayContent = false;
-  configSub: Subscription;
-  layoutSub: Subscription;
-  bgImage: string;
-  bgColor: string;
+  configSub: Subscription = new Subscription();
+  layoutSub: Subscription = new Subscription();
+  bgImage: string = "";
+  bgColor: string = "";
   isSmallScreen = false;
   menuPosition = 'Side';
   displayOverlayMenu = false; // Vertical Side menu for screenSize < 1200
@@ -39,7 +39,7 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   isMenuCollapsedOnHover = false;
   isNavbarSeachTextEmpty = true;
   isScrollTopVisible = false;
-  resizeTimeout;
+  resizeTimeout: any;
 
   constructor(
     private configService: ConfigService,
@@ -327,20 +327,10 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  sidebarMouseenter(e) {
-    if (this.config.layout.sidebar.collapsed) {
-      this.isMenuCollapsedOnHover = false;
-      this.layoutService.overlaySidebartoggle(this.isMenuCollapsedOnHover);
-    }
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    this.onOutsideClick(event);
   }
-
-  sidebarMouseleave(e) {
-    if (this.config.layout.sidebar.collapsed) {
-      this.isMenuCollapsedOnHover = true;
-      this.layoutService.overlaySidebartoggle(this.isMenuCollapsedOnHover);
-    }
-  }
-
   //scroll to top on click
   scrollToTop() {
     window.scroll({
@@ -364,13 +354,13 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isNavbarSeachTextEmpty = true;
   }
 
-  checkNavbarSeachTextEmpty($event) {
+  checkNavbarSeachTextEmpty($event: boolean) {
     this.isNavbarSeachTextEmpty = $event;
   }
 
 
   @HostListener('window:resize', ['$event'])
-  onResize(event) {
+  onResize(event: Event) {
     if (this.resizeTimeout) {
       clearTimeout(this.resizeTimeout);
     }

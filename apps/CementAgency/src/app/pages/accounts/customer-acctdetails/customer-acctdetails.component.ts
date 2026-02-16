@@ -16,14 +16,14 @@ import { PrintDataService } from '../../../services/print.data.services';
   styleUrls: ['./customer-acctdetails.component.scss'],
 })
 export class CustomerAcctdetailsComponent implements OnInit, OnChanges {
-  @Input('FromDate') FromDate: '';
-  @Input('ToDate') ToDate: '';
-  @Input('CustomerID') CustomerID: '';
+  @Input('FromDate') FromDate: string = '';
+  @Input('ToDate') ToDate: string = '';
+  @Input('CustomerID') CustomerID: string = '';
   @Input('bid') bid = 0;
 
   public data: any = [];
-  public Products: object[];
-  public Users: object[];
+  public Products: object[] = [];
+  public Users: object[] = [];
 
   customer: any = {};
 
@@ -83,7 +83,7 @@ export class CustomerAcctdetailsComponent implements OnInit, OnChanges {
         }
       });
   }
-  formatDate(d) {
+  formatDate(d: any) {
     return JSON2Date(d);
   }
   PrintReport() {

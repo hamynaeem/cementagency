@@ -11,8 +11,14 @@ import { TransportDetail } from '../transport.model';
   styleUrls: ['./transport-income.component.scss'],
 })
 export class TransportIncomeComponent implements OnInit {
-  @ViewChild('cmbCustomer') cmbCustomer;
-  public Voucher: TransportDetail;
+  @ViewChild('cmbCustomer') cmbCustomer: any;
+  public Voucher: TransportDetail = {
+    Date: new Date(),
+    TransportID: 0,
+    Details: null,
+    Income: 0,
+    Expense: 0,
+  };
   AcctTypes = [];
   EditID = '';
   public Ino = '';
@@ -92,10 +98,10 @@ export class TransportIncomeComponent implements OnInit {
         this.alert.Error(err.error.message, 'Error', 1);
       });
   }
-  GetVehicle(VehicleID) {
+  GetVehicle(VehicleID: number) {
     console.log(VehicleID);
 
-    if (VehicleID && VehicleID !== '') {
+    if (VehicleID && VehicleID !== 0) {
       this.http
         .getData('transports?filter=TransportID=' + VehicleID)
         .then((r: any) => {
@@ -103,7 +109,7 @@ export class TransportIncomeComponent implements OnInit {
         });
     }
   }
-  Round(amnt) {
+  Round(amnt: number) {
     return Math.round(amnt);
   }
 

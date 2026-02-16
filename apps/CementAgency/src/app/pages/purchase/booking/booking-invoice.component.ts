@@ -279,7 +279,9 @@ export class BookingInvoiceComponent
     this.bookingDetail.ProductID = undefined;
     this.bookingDetail.Qty = 0;
     this.bookingDetail.Price = 0;
-    this.cmbProd.focus();
+    if (this.cmbProd) {
+      this.cmbProd.focus();
+    }
   }
   removeItem() {
     if (this.bookData.length > 0) {
@@ -344,7 +346,9 @@ export class BookingInvoiceComponent
     }
     this.saleData.push(saleItem);
     this.calcSaleData();
-    this.cmbCustomers.focus();
+    if (this.cmbCustomers) {
+      this.cmbCustomers.focus();
+    }
     this.saleDetail.ProductID = undefined;
     this.saleDetail.Qty = 0;
     this.saleDetail.Price = 0;
@@ -371,7 +375,7 @@ export class BookingInvoiceComponent
     this.booking.BagsSold = this.saleData.reduce(
       (acc, item) => acc + item.Qty * 1,
       0
-    );
+    ) * 20;
   }
   saveAndPrint() {
     this.SaveData();

@@ -32,15 +32,15 @@ import { PInvoice, PInvoiceDetails } from './pinvoicedetails.model';
   styleUrls: ['./purchase-invoice.component.scss'],
 })
 export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewInit {
-  @Input() Type: string;
+  @Input() Type: string = '';
   @Input() EditID = '';
 
   selectedProduct: any;
-  @ViewChild('fromPurchase') fromPurchase;
-  @ViewChild('cmbProduct') cmbProd;
-  @ViewChild('qty') elQty;
-  @ViewChild('cmbCustomers') cmbCustomers;
-  @ViewChild('btnBar') btnBar: ButtonsBarComponent;
+  @ViewChild('fromPurchase') fromPurchase: any;
+  @ViewChild('cmbProduct') cmbProd!: { focus: () => void; };
+  @ViewChild('qty') elQty!: { nativeElement: { focus: () => void; }; };
+  @ViewChild('cmbCustomers') cmbCustomers: any;
+  @ViewChild('btnBar') btnBar!: ButtonsBarComponent;
 
   public data = new LocalDataSource([]);
   Ino = '';
@@ -242,7 +242,7 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
       });
     }
   }
-  ProductSearchFn(term: any, item) {
+  ProductSearchFn(term: any, item: { ProductName: string; ProductID: any; }) {
     if (isNaN(term)) {
       return (
         item.ProductName.toLocaleLowerCase().indexOf(
@@ -271,11 +271,11 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
     };
     this.data.prepend(obj);
   }
-  CustomerSelected(event) {
+  CustomerSelected(event: { CustomerID: any; }) {
     console.log(event);
 
     if (event.CustomerID) {
-      this.SelectCust = this.Accounts.find((x) => {
+      this.SelectCust = this.Accounts.find((x: { CustomerID: any; }) => {
         return x.CustomerID == event.CustomerID;
       });
     }
@@ -283,7 +283,9 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
   public AddOrder() {
     if (this.pdetails.Packing == 0) {
       Swal.fire('Invalid Packing').then(() => {
-        this.elQty.nativeElement.focus();
+        if (this.elQty?.nativeElement) {
+          this.elQty.nativeElement.focus();
+        }
       });
       return;
     }
@@ -293,13 +295,17 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
     }
     if (this.pdetails.Qty == 0 && this.pdetails.KGs == 0) {
       Swal.fire('Invalid Quantity').then(() => {
-        this.elQty.nativeElement.focus();
+        if (this.elQty?.nativeElement) {
+          this.elQty.nativeElement.focus();
+        }
       });
       return;
     }
     if (this.pdetails.PPrice == 0) {
       Swal.fire('Invalid Rate').then(() => {
-        this.elQty.nativeElement.focus();
+        if (this.elQty?.nativeElement) {
+          this.elQty.nativeElement.focus();
+        }
       });
       return;
     }
@@ -309,11 +315,13 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
     this.AddToDetails(this.pdetails);
     this.data.refresh();
     this.calculation();
-    this.cmbProd.focus();
+    if (this.cmbProd) {
+      this.cmbProd.focus();
+    }
     this.pdetails = new PInvoiceDetails();
     this.pdetails.StoreID = storeid;
   }
-  ProductSelected($event) {
+  ProductSelected($event: { ProductID: string; }) {
     if ($event && $event.ProductID !== '') {
       this.selectedProduct = $event;
       this.pdetails.Packing = this.selectedProduct.Packing;
@@ -378,7 +386,7 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
       }
     });
   }
-  public onDeleteConfirm(event): void {
+  public onDeleteConfirm(event: { confirm: { resolve: () => void; reject: () => void; }; }): void {
     if (window.confirm('Are you sure you want to delete?')) {
       event.confirm.resolve();
       setTimeout(() => {
@@ -389,7 +397,7 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
       event.confirm.reject();
     }
   }
-  public onEdit(event) {
+  public onEdit(event: { newData: { Amount: number; Qty: number; Packing: number; KGs: number; PPrice: number; RateUnit: number; }; confirm: { resolve: (arg0: any) => void; }; }) {
     event.newData.Amount =
       ((event.newData.Qty * event.newData.Packing + 1 * event.newData.KGs) *
         event.newData.PPrice) /
@@ -408,7 +416,7 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
       //  console.log(prop === 'CustomerName'? this.Accounts: this.Prods);
       let filtered = (
         prop === 'CustomerName' ? this.Accounts : this.Prods
-      ).filter((f) => {
+      ).filter((f: { [x: string]: string; }) => {
         return f[prop].toLowerCase().indexOf(e.text.toLowerCase()) >= 0;
       });
       console.log(filtered);
@@ -417,15 +425,15 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
     }
   };
 
-  public onRowSelect(e) {
+  public onRowSelect(e: any) {
     // console.log(event);
   }
 
-  public onUserRowSelect(e) {
+  public onUserRowSelect(e: any) {
     // console.log(event);   //this select return only one page rows
   }
 
-  public onRowHover(e) {
+  public onRowHover(e: any) {
     // console.log(event);
   }
 
@@ -470,7 +478,7 @@ export class PurchaseInvoiceComponent implements OnInit, OnChanges, AfterViewIni
   FindINo() {
     this.router.navigate(['/purchase/invoice/', this.Ino]);
   }
-  NavigatorClicked(e) {
+  NavigatorClicked(e: { Button: any; }) {
     let dt = GetDateJSON();
     let billNo: any = '5023500';
     // let billNo:any = '5027897';

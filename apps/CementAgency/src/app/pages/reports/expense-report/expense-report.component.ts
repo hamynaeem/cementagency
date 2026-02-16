@@ -58,7 +58,7 @@ export class ExpenseReportComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.http.getData('expensehead').then((r: any) => {
+    this.http.getData('expenseheads').then((r: any) => {
       this.Heads = r;
     });
 

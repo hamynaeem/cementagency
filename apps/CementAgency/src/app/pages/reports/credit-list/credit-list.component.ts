@@ -13,8 +13,8 @@ import { MyToastService } from '../../../services/toaster.server';
   styleUrls: ['./credit-list.component.scss'],
 })
 export class CreditlistComponent implements OnInit {
-  @ViewChild('RptTable') RptTable;
-  @ViewChild('cmbRoute') cmbRoute : ComboBoxComponent;
+  @ViewChild('RptTable') RptTable: any;
+  @ViewChild('cmbRoute') cmbRoute!: ComboBoxComponent;
 
   public Filter = {
     City: '',
@@ -47,7 +47,7 @@ export class CreditlistComponent implements OnInit {
         label: 'Amount',
         fldName: 'Balance',
         sum: true,
-        valueFormatter: (d) => {
+        valueFormatter: (d: any) => {
           return formatNumber(d['Balance']);
         },
       },
@@ -60,7 +60,7 @@ export class CreditlistComponent implements OnInit {
   };
 
   public Cities:any=[];
-  public data: object[];
+  public data: object[] = [];
 
   constructor(
     private http: HttpBase,
@@ -85,7 +85,7 @@ export class CreditlistComponent implements OnInit {
     if (this.Filter.City) filter += ` and City='${this.Filter.City}'`
     if (this.Filter.Balance) filter += ' and Balance >=' + this.Filter.Balance
 
-    this.http.getData('qrycustomers?flds=CustomerID,CustomerName, Address, City, Balance as Balance&filter=' + filter).then((r: any) => {
+    this.http.getData('qrycustomers?flds=CustomerID,CustomerName, Address, City, PhoneNo1, Balance as Balance&filter=' + filter).then((r: any) => {
       this.data = r;
     });
   }

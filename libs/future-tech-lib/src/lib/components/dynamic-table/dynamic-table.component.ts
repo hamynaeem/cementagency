@@ -156,13 +156,23 @@ export class DynamicTableComponent implements OnInit, OnDestroy, OnChanges {
   // Add row background color configuration
   @Input() rowBackgroundConfig: {
     condition?: (row: any, index: number) => boolean;
-    color?: string;
+    color?: string | ((row: any, index: number) => string);
     conditions?: Array<{
       condition: (row: any, index: number) => boolean;
       color: string;
       priority?: number;
     }>;
     defaultColor?: string;
+    subRowBackgroundConfig?: {
+      condition?: (subRow: any, subIndex: number, parentRow: any, parentIndex: number) => boolean;
+      color?: string | ((subRow: any, subIndex: number, parentRow: any, parentIndex: number) => string);
+      conditions?: Array<{
+        condition: (subRow: any, subIndex: number, parentRow: any, parentIndex: number) => boolean;
+        color: string;
+        priority?: number;
+      }>;
+      defaultColor?: string;
+    };
   } = {};
 
   SubTable: any;
@@ -316,7 +326,11 @@ export class DynamicTableComponent implements OnInit, OnDestroy, OnChanges {
       this.rowBackgroundConfig.condition &&
       this.rowBackgroundConfig.condition(row, index)
     ) {
-      return this.rowBackgroundConfig.color || 'lightblue';
+      const color = this.rowBackgroundConfig.color;
+      if (typeof color === 'function') {
+        return color(row, index);
+      }
+      return color || 'lightblue';
     }
 
     // Return default color
@@ -374,7 +388,11 @@ export class DynamicTableComponent implements OnInit, OnDestroy, OnChanges {
         config.condition &&
         config.condition(subRow, subIndex, parentRow, parentIndex)
       ) {
-        return config.color || 'lightblue';
+        const color = config.color;
+        if (typeof color === 'function') {
+          return color(subRow, subIndex, parentRow, parentIndex);
+        }
+        return color || 'lightblue';
       }
 
       // Default color for sub-row

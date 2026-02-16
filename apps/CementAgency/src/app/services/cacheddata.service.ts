@@ -13,7 +13,7 @@ import { HttpBase } from './httpbase.service';
   }
 )
 export class CachedDataService {
-  private api = environment.INSTANCE_URL + 'apis/';
+  private api = environment.INSTANCE_URL;
 
 //--------- routers list
 private _routesData$ = new BehaviorSubject<void>(undefined);

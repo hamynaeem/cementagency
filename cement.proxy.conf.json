@@ -1,6 +1,6 @@
 {
   "/apis/*": {
-    "target": "http://localhost:80/db_cement/",
+    "target": "http://localhost:8000/",
     "secure": false,
     "logLevel": "debug",
     "pathRewrite": {

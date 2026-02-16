@@ -75,7 +75,7 @@ export class AuthGuard implements CanActivate {
 
       if (currentRT) {
         const userMenu: any = this.http.getUserMenu()
-        let menu = userMenu.find(x => x.pageid == currentRT!.id);
+        let menu = userMenu.find((x: any) => x.pageid == currentRT!.id);
         if (menu) {
           console.log(menu);
           return true

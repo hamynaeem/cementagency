@@ -216,7 +216,7 @@ describe('DynamicTableComponent - Sub-table Background Color', () => {
         Checkbox: false,
         crud: false,
         ButtonsAtRight: false
-      };
+      } as any;
 
       component.rowBackgroundConfig = {
         subRowBackgroundConfig: {

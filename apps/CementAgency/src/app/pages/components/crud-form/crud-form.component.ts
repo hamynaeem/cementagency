@@ -30,7 +30,7 @@ export class CrudFormComponent implements OnInit {
     console.log(this.formdata);
    // this.formdata = Object.assign({}, this.FromData);
     this.form.columns.forEach((col) => {
-      if (col.hasOwnProperty("listTable")) {
+      if (col.hasOwnProperty("listTable") && col.listTable && col.listTable.trim() !== '') {
         this.http.getData(col.listTable + "?flds=" + col.valueFld + "," + col.displayFld).then((res: any) => {
           col.listData = res;
         });
