@@ -46,8 +46,6 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     private layoutService: LayoutService,
     private router: Router,
     private customizerService: CustomizerService,
-    @Inject(DOCUMENT) private document: Document,
-    @Inject(WINDOW) private window: Window,
     private renderer: Renderer2,
     private cdr: ChangeDetectorRef,
     private deviceService: DeviceDetectorService
@@ -85,7 +83,7 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.innerWidth < 1200) {
           this.layoutService.toggleSidebarSmallScreen(false);
           this.overlayContent = false;
-          this.renderer.removeClass(this.document.body, "overflow-hidden");
+          this.renderer.removeClass(document.body, "overflow-hidden");
         }
       }
     });
@@ -110,66 +108,66 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   //adjust layout
   setMenuLayout() {
     this.overlayContent = false;
-    this.renderer.removeClass(this.document.body, "blank-page");
+    this.renderer.removeClass(document.body, "blank-page");
     if (this.config.layout.menuPosition === "Top") { // Horizontal Menu
       if (this.innerWidth < 1200) { // Screen size < 1200
         this.displayOverlayMenu = true;
         this.hideSidebar = true;
-        this.renderer.removeClass(this.document.body, "horizontal-menu");
-        this.renderer.removeClass(this.document.body, "menu-open");
+        this.renderer.removeClass(document.body, "horizontal-menu");
+        this.renderer.removeClass(document.body, "menu-open");
 
-         this.renderer.addClass(this.document.body, "horizontal-layout");
-        this.renderer.addClass(this.document.body, "horizontal-menu-padding");
-        this.renderer.addClass(this.document.body, "vertical-layout");
-        this.renderer.addClass(this.document.body, "vertical-overlay-menu");
-        this.renderer.addClass(this.document.body, "fixed-navbar");
-        this.renderer.addClass(this.document.body, "menu-hide");
+         this.renderer.addClass(document.body, "horizontal-layout");
+        this.renderer.addClass(document.body, "horizontal-menu-padding");
+        this.renderer.addClass(document.body, "vertical-layout");
+        this.renderer.addClass(document.body, "vertical-overlay-menu");
+        this.renderer.addClass(document.body, "fixed-navbar");
+        this.renderer.addClass(document.body, "menu-hide");
       }
       else { // Screen size > 1200
         this.displayOverlayMenu = false;
         this.hideSidebar = false;
-        this.renderer.setAttribute(this.document.body, "data-menu", "horizontal-menu");
-        this.renderer.removeClass(this.document.body, "vertical-layout");
-        this.renderer.removeClass(this.document.body, "vertical-overlay-menu");
-        this.renderer.removeClass(this.document.body, "fixed-navbar");
-        this.renderer.removeClass(this.document.body, "menu-hide");
-        this.renderer.removeClass(this.document.body, "vertical-menu");
-        this.renderer.addClass(this.document.body, "horizontal-menu");
-        this.renderer.addClass(this.document.body, "horizontal-layout");
-        this.renderer.addClass(this.document.body, "horizontal-menu-padding");
+        this.renderer.setAttribute(document.body, "data-menu", "horizontal-menu");
+        this.renderer.removeClass(document.body, "vertical-layout");
+        this.renderer.removeClass(document.body, "vertical-overlay-menu");
+        this.renderer.removeClass(document.body, "fixed-navbar");
+        this.renderer.removeClass(document.body, "menu-hide");
+        this.renderer.removeClass(document.body, "vertical-menu");
+        this.renderer.addClass(document.body, "horizontal-menu");
+        this.renderer.addClass(document.body, "horizontal-layout");
+        this.renderer.addClass(document.body, "horizontal-menu-padding");
       }
     }
     else if (this.config.layout.menuPosition === "Side") { // Vertical Menu
       if (this.innerWidth < 1200) { // If Screen size < 1200
         this.displayOverlayMenu = true;
-        this.renderer.removeClass(this.document.body, "horizontal-layout");
-        this.renderer.removeClass(this.document.body, "horizontal-menu");
-        this.renderer.removeClass(this.document.body, "horizontal-menu-padding");
-        this.renderer.removeClass(this.document.body, "menu-expanded");
-        this.renderer.removeClass(this.document.body, "vertical-menu");
-        this.renderer.removeClass(this.document.body, "menu-open");
-        this.renderer.removeClass(this.document.body, "nav-collapsed");
+        this.renderer.removeClass(document.body, "horizontal-layout");
+        this.renderer.removeClass(document.body, "horizontal-menu");
+        this.renderer.removeClass(document.body, "horizontal-menu-padding");
+        this.renderer.removeClass(document.body, "menu-expanded");
+        this.renderer.removeClass(document.body, "vertical-menu");
+        this.renderer.removeClass(document.body, "menu-open");
+        this.renderer.removeClass(document.body, "nav-collapsed");
 
-        this.renderer.addClass(this.document.body, "vertical-layout");
-        this.renderer.addClass(this.document.body, "menu-hide");
+        this.renderer.addClass(document.body, "vertical-layout");
+        this.renderer.addClass(document.body, "menu-hide");
 
       }
       else { // If Screen size > 1200
         this.displayOverlayMenu = false;
 
-        this.renderer.removeClass(this.document.body, "horizontal-layout");
-        this.renderer.removeClass(this.document.body, "horizontal-menu");
-        this.renderer.removeClass(this.document.body, "horizontal-menu-padding");
+        this.renderer.removeClass(document.body, "horizontal-layout");
+        this.renderer.removeClass(document.body, "horizontal-menu");
+        this.renderer.removeClass(document.body, "horizontal-menu-padding");
 
-        this.renderer.setAttribute(this.document.body, "data-menu", "vertical-menu");
-        this.renderer.addClass(this.document.body, "vertical-layout");
+        this.renderer.setAttribute(document.body, "data-menu", "vertical-menu");
+        this.renderer.addClass(document.body, "vertical-layout");
         if (!this.config.layout.sidebar.collapsed) {
-          this.renderer.addClass(this.document.body, "menu-expanded");
-          this.renderer.addClass(this.document.body, "menu-open");
+          this.renderer.addClass(document.body, "menu-expanded");
+          this.renderer.addClass(document.body, "menu-open");
         }
-        this.renderer.addClass(this.document.body, "vertical-menu");
-        this.renderer.removeClass(this.document.body, "menu-hide");
-        this.renderer.removeClass(this.document.body, "vertical-overlay-menu");
+        this.renderer.addClass(document.body, "vertical-menu");
+        this.renderer.removeClass(document.body, "menu-hide");
+        this.renderer.removeClass(document.body, "vertical-overlay-menu");
       }
     }
   }
@@ -211,17 +209,17 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Layout variants
     if (this.config.layout.variant === "Light") {
-      this.renderer.removeClass(this.document.body, "layout-dark");
-      this.renderer.removeClass(this.document.body, "layout-transparent");
+      this.renderer.removeClass(document.body, "layout-dark");
+      this.renderer.removeClass(document.body, "layout-transparent");
     }
     else if (this.config.layout.variant === "Dark") {
-      this.renderer.removeClass(this.document.body, "layout-transparent");
-      this.renderer.addClass(this.document.body, "layout-dark");
+      this.renderer.removeClass(document.body, "layout-transparent");
+      this.renderer.addClass(document.body, "layout-dark");
     }
     else if (this.config.layout.variant === "Transparent") {
-      this.renderer.addClass(this.document.body, "layout-dark");
-      this.renderer.addClass(this.document.body, "layout-transparent");
-      this.renderer.addClass(this.document.body, this.bgColor);
+      this.renderer.addClass(document.body, "layout-dark");
+      this.renderer.addClass(document.body, "layout-transparent");
+      this.renderer.addClass(document.body, this.bgColor);
       this.bgImage = "";
     }
 
@@ -229,66 +227,66 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // For Sidebar width
     if (this.config.layout.sidebar.size === 'sidebar-sm') {
-      this.renderer.removeClass(this.document.body, "sidebar-lg");
-      this.renderer.addClass(this.document.body, "sidebar-sm");
+      this.renderer.removeClass(document.body, "sidebar-lg");
+      this.renderer.addClass(document.body, "sidebar-sm");
     }
     else if (this.config.layout.sidebar.size === 'sidebar-lg') {
-      this.renderer.removeClass(this.document.body, "sidebar-sm");
-      this.renderer.addClass(this.document.body, "sidebar-lg");
+      this.renderer.removeClass(document.body, "sidebar-sm");
+      this.renderer.addClass(document.body, "sidebar-lg");
     }
     else {
-      this.renderer.removeClass(this.document.body, "sidebar-sm");
-      this.renderer.removeClass(this.document.body, "sidebar-lg");
+      this.renderer.removeClass(document.body, "sidebar-sm");
+      this.renderer.removeClass(document.body, "sidebar-lg");
     }
 
     if (this.config.layout.menuPosition === "Side") {
       // vertical/Side menu expanded/collapse
       if (this.config.layout.sidebar.collapsed && !this.isSmallScreen) { // collapse side menu
-        this.renderer.removeClass(this.document.body, "menu-expanded");
-        this.renderer.addClass(this.document.body, "nav-collapsed");
+        this.renderer.removeClass(document.body, "menu-expanded");
+        this.renderer.addClass(document.body, "nav-collapsed");
       }
       else { // expand side menu
-        this.renderer.removeClass(this.document.body, "nav-collapsed");
-        this.renderer.addClass(this.document.body, "menu-expanded");
+        this.renderer.removeClass(document.body, "nav-collapsed");
+        this.renderer.addClass(document.body, "menu-expanded");
       }
     }
 
     //Navbar types
     if (this.config.layout.navbar.type === 'Static') {
-      this.renderer.removeClass(this.document.body, "navbar-sticky");
-      this.renderer.addClass(this.document.body, "navbar-static");
+      this.renderer.removeClass(document.body, "navbar-sticky");
+      this.renderer.addClass(document.body, "navbar-static");
     }
     else if (this.config.layout.navbar.type === 'Fixed') {
-      this.renderer.removeClass(this.document.body, "navbar-static");
-      this.renderer.addClass(this.document.body, "navbar-sticky");
+      this.renderer.removeClass(document.body, "navbar-static");
+      this.renderer.addClass(document.body, "navbar-sticky");
     }
 
   }
 
   toggleSidebar() {
     if (this.hideSidebar) { // on sidebar collapse
-      this.renderer.removeClass(this.document.body, "menu-expanded");
-      this.renderer.removeClass(this.document.body, "vertical-menu");
-      this.renderer.removeClass(this.document.body, "menu-open");
+      this.renderer.removeClass(document.body, "menu-expanded");
+      this.renderer.removeClass(document.body, "vertical-menu");
+      this.renderer.removeClass(document.body, "menu-open");
 
-      this.renderer.addClass(this.document.body, "vertical-layout");
-      this.renderer.addClass(this.document.body, "menu-hide");
+      this.renderer.addClass(document.body, "vertical-layout");
+      this.renderer.addClass(document.body, "menu-hide");
 
       if (this.config.layout.menuPosition === "Top") {
-        this.renderer.addClass(this.document.body, "vertical-overlay-menu");
+        this.renderer.addClass(document.body, "vertical-overlay-menu");
       }
     }
     else { // on sidebar expand
-      this.renderer.addClass(this.document.body, "vertical-layout");
-      this.renderer.addClass(this.document.body, "menu-expanded");
-      this.renderer.addClass(this.document.body, "vertical-menu");
+      this.renderer.addClass(document.body, "vertical-layout");
+      this.renderer.addClass(document.body, "menu-expanded");
+      this.renderer.addClass(document.body, "vertical-menu");
       if (this.config.layout.sidebar.collapsed) {
-        this.renderer.removeClass(this.document.body, "menu-open");
+        this.renderer.removeClass(document.body, "menu-open");
       }
       else {
-        this.renderer.addClass(this.document.body, "menu-open");
+        this.renderer.addClass(document.body, "menu-open");
       }
-      this.renderer.removeClass(this.document.body, "menu-hide");
+      this.renderer.removeClass(document.body, "menu-hide");
     }
     this.isTouchDevice();
   }
@@ -300,9 +298,9 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (isMobile || isTablet) {
       if(!this.hideSidebar){
-        this.renderer.addClass(this.document.body, "overflow-hidden");
+        this.renderer.addClass(document.body, "overflow-hidden");
       } else {
-        this.renderer.removeClass(this.document.body, "overflow-hidden");
+        this.renderer.removeClass(document.body, "overflow-hidden");
       }
     }
 
@@ -319,11 +317,11 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   //Remove transparent layout classes
   removeTransparentBGClasses() {
     this.customizerService.transparent_colors.forEach(_ => {
-      this.renderer.removeClass(this.document.body, _.class);
+      this.renderer.removeClass(document.body, _.class);
     });
 
     this.customizerService.transparent_colors_with_shade.forEach(_ => {
-      this.renderer.removeClass(this.document.body, _.class);
+      this.renderer.removeClass(document.body, _.class);
     });
   }
 
@@ -340,10 +338,11 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  onOutsideClick(e) {
+  onOutsideClick(e: Event): void {
     if (this.innerWidth < 1200) {
+      const target = e.target as HTMLElement;
       if (
-        !e.target.classList.contains("toggleSidebarNavbarButton")
+        !target.classList.contains("toggleSidebarNavbarButton")
       ) {
         this.layoutService.toggleSidebarSmallScreen(false);
       }
@@ -365,7 +364,7 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
       clearTimeout(this.resizeTimeout);
     }
     this.resizeTimeout = setTimeout((() => {
-      this.innerWidth = event.target.innerWidth;
+      this.innerWidth = window.innerWidth;
       this.setMenuLayout();
       this.hideCompactMenuOnSmallScreen();
     }).bind(this), 500);
@@ -375,11 +374,11 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   //Add/remove classes on page scroll
   @HostListener("window:scroll", [])
   onWindowScroll() {
-    let number = this.window.pageYOffset || this.document.documentElement.scrollTop || this.document.body.scrollTop || 0;
+    let number = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     if (number > 60) {
-      this.renderer.addClass(this.document.body, "navbar-scrolled");
+      this.renderer.addClass(document.body, "navbar-scrolled");
     } else {
-      this.renderer.removeClass(this.document.body, "navbar-scrolled");
+      this.renderer.removeClass(document.body, "navbar-scrolled");
     }
 
     if (number > 400) {
@@ -389,9 +388,25 @@ export class FullLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (number > 20) {
-      this.renderer.addClass(this.document.body, "page-scrolled");
+      this.renderer.addClass(document.body, "page-scrolled");
     } else {
-      this.renderer.removeClass(this.document.body, "page-scrolled");
+      this.renderer.removeClass(document.body, "page-scrolled");
+    }
+  }
+
+  // Handle sidebar mouse enter event
+  sidebarMouseenter(event: MouseEvent): void {
+    if (this.config.layout.menuPosition === 'Side' && this.config.layout.sidebar.collapsed && !this.isSmallScreen) {
+      this.renderer.removeClass(document.body, "nav-collapsed");
+      this.renderer.addClass(document.body, "menu-expanded");
+    }
+  }
+
+  // Handle sidebar mouse leave event  
+  sidebarMouseleave(event: MouseEvent): void {
+    if (this.config.layout.menuPosition === 'Side' && this.config.layout.sidebar.collapsed && !this.isSmallScreen) {
+      this.renderer.removeClass(document.body, "menu-expanded");
+      this.renderer.addClass(document.body, "nav-collapsed");
     }
   }
 

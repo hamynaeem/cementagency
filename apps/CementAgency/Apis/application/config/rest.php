@@ -560,7 +560,9 @@ $config['allowed_cors_headers'] = [
   'X-Requested-With',
   'Content-Type',
   'Accept',
-  'Access-Control-Request-Method'
+  'Access-Control-Request-Method',
+  'Access-Control-Allow-Methods',
+  'Authorization'
 ];
 
 /*

@@ -11,7 +11,7 @@ import { PrintDataService } from '../../../services/print.data.services';
   styleUrls: ['./purchase-ledger.component.scss'],
 })
 export class PurchaseLedgerComponent implements OnInit {
-  @ViewChild('RptTable') RptTable;
+  @ViewChild('RptTable') RptTable: any;
 
   public Filter = {
     FromDate: GetDateJSON(),
@@ -26,39 +26,52 @@ export class PurchaseLedgerComponent implements OnInit {
       {
         label: 'Date',
         fldName: 'Date',
+        width: '100px'
       },
       {
         label: 'Bill No',
         fldName: 'BookingID',
+        width: '100px'
+      },
+      {
+        label: 'Account Name',
+        fldName: 'CustomerName',
+        width: '180px'
       },
       {
         label: 'Product Name',
         fldName: 'ProductName',
+        width: '200px'
       },
-
       {
         label: 'Qty (Tons)',
         fldName: 'Qty',
         sum: true,
+        width: '100px',
+        align: 'right'
       },
       {
         label: 'Price',
         fldName: 'PPrice',
+        width: '100px',
+        align: 'right'
       },
       {
         label: 'Amount',
         fldName: 'Amount',
         sum: true,
-      },
+        width: '120px',
+        align: 'right'
+      }
     ],
     Actions: [],
-    Data: [],
+    Data: []
   };
 
   nWhat = '1';
-  Items: any = [{ ItemID: '1', ItemName: 'Test Item' }];
+  Items: any[] = [{ ItemID: '1', ItemName: 'Test Item' }];
 
-  public data: object[];
+  public data: any[] = [];
   public Accounts: any;
   public selectedCustomer: any = {};
   constructor(
@@ -89,7 +102,7 @@ export class PurchaseLedgerComponent implements OnInit {
 
     this.router.navigateByUrl('/print/print-html');
   }
-  CustomerSelected(e) {
+  CustomerSelected(e: any) {
     console.log(e);
     this.selectedCustomer = e;
   }
@@ -109,28 +122,53 @@ export class PurchaseLedgerComponent implements OnInit {
       if (this.nWhat == '1') filter += ' and ProductID=' + this.Filter.ItemID;
       else filter += ' and UnitID=' + this.Filter.ItemID;
 
+    // Request all necessary fields including Date and BookingID
     let flds =
-      'Date,BookingID, ProductName, Qty, PPrice, Amount';
+      'Date,BookingID,InvoiceID,ProductName,Qty,PPrice,Amount,CustomerName,SupplierName';
+
+    console.log('Filter:', filter);
+    console.log('Fields:', flds);
 
     this.http
       .getData(
         `qrypurchasereport?orderby=Date,BookingID&flds=${flds}&filter=${filter}`
       )
       .then((r: any) => {
-        this.data = r;
+        console.log('Purchase ledger data loaded:', r);
+        
+        // Format the data to ensure Date and BookingID are displayed
+        if (r && r.length > 0) {
+          this.data = r.map((item: any) => ({
+            ...item,
+            Date: item.Date ? new Date(item.Date).toLocaleDateString() : 'N/A',
+            BookingID: item.BookingID || item.InvoiceID || 'N/A',
+            ProductName: item.ProductName || 'Unknown Product',
+            Qty: Number(item.Qty) || 0,
+            PPrice: Number(item.PPrice) || 0,
+            Amount: Number(item.Amount) || 0
+          }));
+        } else {
+          this.data = [];
+        }
+        
+        console.log('Formatted data:', this.data);
+      })
+      .catch((error) => {
+        console.error('Error loading purchase ledger data:', error);
+        this.data = [];
       });
   }
-  Clicked(e) {}
+  Clicked(e: any) {}
 
-  ItemSelected(e) {}
-  ItemChange(e) {
+  ItemSelected(e: any) {}
+  ItemChange(e: any) {
     this.LoadItems();
   }
   async LoadItems() {
     this.Items = [];
     if (this.nWhat == '1') {
       this.cachedData.Products$.subscribe((r: any) => {
-        r.forEach((m) => {
+        r.forEach((m: any) => {
           this.Items.push({
             ItemID: m.ProductID,
             ItemName: m.ProductName,
@@ -141,7 +179,7 @@ export class PurchaseLedgerComponent implements OnInit {
       });
     } else if (this.nWhat == '2') {
       this.http.getData('units').then((r: any) => {
-        r.forEach((m) => {
+        r.forEach((m: any) => {
           this.Items.push({
             ItemID: m.ID,
             ItemName: m.UnitName,

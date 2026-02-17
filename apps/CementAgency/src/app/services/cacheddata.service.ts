@@ -50,10 +50,20 @@ private _products$ = new BehaviorSubject<void>(undefined);
 public apiProducts$: any;
 public Products$: any;
 
-//------ accounts
+//------ accounts (combined customers and suppliers)
 private _accounts$ = new BehaviorSubject<void>(undefined);
 public apiAccounts$: any;
 public Accounts$: any;
+
+//------ customers
+private _customers$ = new BehaviorSubject<void>(undefined);
+public apiCustomers$: any;
+public Customers$: any;
+
+//------ suppliers  
+private _suppliers$ = new BehaviorSubject<void>(undefined);
+public apiSuppliers$: any;
+public Suppliers$: any;
 
 constructor(private http: HttpClient, private http2: HttpBase) {
   this.apiroutes$ = this.http.get<any[]>(this.api + 'routes?bid=' + this.http2.getBusinessID());
@@ -98,9 +108,21 @@ constructor(private http: HttpClient, private http2: HttpBase) {
     shareReplay(1)
   );
 
-  this.apiAccounts$ = this.http.get<any[]>(this.api + 'qrycustomers?flds=CustomerID,CustomerName,AcctType,Balance&orderby=CustomerName');
+  this.apiAccounts$ = this.http.get<any[]>(this.api + 'qrycustomers?flds=CustomerID,CustomerName,AcctType,Balance&orderby=CustomerName&bid=' + this.http2.getBusinessID());
   this.Accounts$ = this._accounts$.pipe(
     switchMap(() => this.apiAccounts$),
+    shareReplay(1)
+  );
+
+  this.apiCustomers$ = this.http.get<any[]>(this.api + 'customers?bid=' + this.http2.getBusinessID());
+  this.Customers$ = this._customers$.pipe(
+    switchMap(() => this.apiCustomers$),
+    shareReplay(1)
+  );
+
+  this.apiSuppliers$ = this.http.get<any[]>(this.api + 'suppliers?bid=' + this.http2.getBusinessID());
+  this.Suppliers$ = this._suppliers$.pipe(
+    switchMap(() => this.apiSuppliers$),
     shareReplay(1)
   );
 }
@@ -125,6 +147,12 @@ constructor(private http: HttpClient, private http2: HttpBase) {
   }
   public updateAccounts() {
     this._accounts$.next();
+  }
+  public updateCustomers() {
+    this._customers$.next();
+  }
+  public updateSuppliers() {
+    this._suppliers$.next();
   }
   public updateStock() {
     this._storesData$.next();

@@ -11,6 +11,8 @@ use \Firebase\JWT\JWT;
 
 class Reports extends REST_Controller
 {
+    private $userID = 0;
+    
     public function __construct()
     {
         header('Access-Control-Allow-Origin: *');
@@ -25,31 +27,50 @@ class Reports extends REST_Controller
     }
     public function index_get()
     {
-        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers');
+        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, authorization');
         $this->response(array('result'=>'Ok'), REST_Controller::HTTP_OK);
     }
     public function index_options()
     {
-        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers');
+        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, authorization');
         $this->response(null, REST_Controller::HTTP_OK);
     }
 
     public function index_post()
     {
-        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers');
+        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, authorization');
         $this->response(true, REST_Controller::HTTP_OK);
     }
 
     public function salesummary_get()
     {
-        $filter = $this->get('filter');
-        $result = $this->db->select('CompanyName, UrduName, Packing, truncate(sum(TotPcs)/Packing, 0) as Packs,  MOD(sum(TotPcs),  Packing)  as Pcs')
-        ->from('qrysalereport')
-        ->where($filter? $filter: '1=1')
-        ->group_by('CompanyName,UrduName, Packing')
-        ->order_by('CompanyName,UrduName')
-        ->get()->result_array();
-        $this->response($result, REST_Controller::HTTP_OK);
+        try {
+            $filter = $this->get('filter');
+            
+            // Check if the view exists first
+            if (!$this->db->table_exists('qrysalereport')) {
+                $this->response([
+                    'error' => 'Sales report view not found',
+                    'message' => 'The qrysalereport view does not exist in the database'
+                ], REST_Controller::HTTP_NOT_FOUND);
+                return;
+            }
+            
+            $result = $this->db->select('CompanyName, UrduName, Packing, truncate(sum(TotPcs)/Packing, 0) as Packs,  MOD(sum(TotPcs),  Packing)  as Pcs')
+            ->from('qrysalereport')
+            ->where($filter? $filter: '1=1')
+            ->group_by('CompanyName,UrduName, Packing')
+            ->order_by('CompanyName,UrduName')
+            ->get()->result_array();
+            
+            $this->response($result, REST_Controller::HTTP_OK);
+            
+        } catch (Exception $e) {
+            $this->response([
+                'error' => 'Database error',
+                'message' => $e->getMessage()
+            ], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
     public function getAuthorizationHeader()
     {
@@ -81,10 +102,20 @@ class Reports extends REST_Controller
     {
         $token = $this->getBearerToken();
         if ($token) {
-            $decode = jwt::decode($token, $this->config->item('api_key'), array('HS256'));
-            $this->userID = $decode->id;
-            return true;
+            try {
+                $decode = JWT::decode($token, $this->config->item('api_key'), array('HS256'));
+                $this->userID = $decode->id;
+                return true;
+            } catch (Exception $e) {
+                // Token is invalid or expired
+                return false;
+            }
         }
         return false;
+    }
+    
+    public function test_get()
+    {
+        $this->response(['message' => 'Reports controller working', 'timestamp' => date('Y-m-d H:i:s')], REST_Controller::HTTP_OK);
     }
 }

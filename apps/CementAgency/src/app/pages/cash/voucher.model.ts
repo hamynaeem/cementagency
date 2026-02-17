@@ -1,6 +1,7 @@
 import { getCurDate, GetDateJSON } from '../../factories/utilities';
 
 export class VoucherModel {
+  VoucherID = "";
   Date: any = GetDateJSON();
   RouteID = "";
   AcctTypeID="";
@@ -17,4 +18,5 @@ export class VoucherModel {
   UserID = "";
   ProductID = "";
   ClosingID = "0";
+  BusinessID = 1; // Add BusinessID field
 }

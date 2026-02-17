@@ -1,0 +1,55 @@
+/* Enhanced account dropdown styling */
+.account-option {
+  .account-name {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .account-details {
+    font-size: 0.85em;
+    margin-top: 2px;
+    
+    .account-type {
+      background: #e9ecef;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.8em;
+    }
+    
+    .account-balance {
+      color: #28a745;
+      font-weight: 500;
+    }
+  }
+}
+
+.selected-account-info {
+  border: 1px solid #dee2e6;
+  font-size: 0.9em;
+}
+
+/* Improve ng-select appearance */
+::ng-deep .ng-select {
+  .ng-option {
+    padding: 8px 12px;
+    
+    &.ng-option-highlighted {
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    
+    &.ng-option-selected {
+      background-color: #007bff;
+      color: white;
+    }
+  }
+  
+  .ng-placeholder {
+    color: #6c757d;
+    font-style: italic;
+  }
+  
+  .ng-select-container {
+    min-height: 42px;
+  }
+}

@@ -12,8 +12,8 @@ import { PrintDataService } from '../../../services/print.data.services';
   styleUrls: ['./stock-accts.component.scss'],
 })
 export class StockAcctsComponent implements OnInit {
-  @ViewChild('cmbProduct') cmbProduct;
-  public data: object[];
+  @ViewChild('cmbProduct') cmbProduct: any;
+  public data: any[] = [];
 
   public Filter = {
     FromDate: GetDateJSON(),
@@ -90,8 +90,12 @@ export class StockAcctsComponent implements OnInit {
       .getData(
         'qryproducts?flds=ProductID as ItemID, ProductName as ItemName&orderby=ProductName'
       )
-      .then((r) => {
+      .then((r: any) => {
         this.lstDataRource = r;
+      })
+      .catch((error: any) => {
+        console.error('Error loading products:', error);
+        this.lstDataRource = [];
       });
     this.FilterData();
   }
@@ -114,39 +118,61 @@ export class StockAcctsComponent implements OnInit {
       }
     }
   }
-  LoadUnitsData(filter) {
+  LoadUnitsData(filter: any) {
     filter += " and UnitName = '" + this.Filter.ItemID + "'";
 
     this.http
       .getData(
-        'qrystockaccts?flds=Date,RefID,CustomerName, QtyIn, QtyOut' +
+        'qrystock?flds=ProductName,Stock,SPrice,PPrice,ProductID' +
           ' &filter=' +
           filter +
-          '&orderby=AcctID'
+          '&orderby=ProductID'
       )
       .then((r: any) => {
-        this.setting.Columns = this.colProducts;
-        this.data = r;
+        this.setting.Columns = this.colUnits;
+        // Transform the data to match expected format
+        this.data = r.map((item: any) => ({
+          Date: new Date().toLocaleDateString(),
+          CustomerName: 'Stock Item',
+          QtyIn: item.Stock > 0 ? item.Stock : 0,
+          QtyOut: item.Stock < 0 ? Math.abs(item.Stock) : 0
+        }));
+      })
+      .catch((error: any) => {
+        console.error('Error loading units data:', error);
+        this.data = [];
       });
   }
-  LoadProductsData(filter) {
+  LoadProductsData(filter: any) {
     // tslint:disable-next-line:quotemark
 
     filter += ' and ProductID = ' + this.Filter.ItemID;
 
     this.http
       .getData(
-        'qrystockaccts?flds=Date, RefID, CustomerName, QtyIn, QtyOut, Balance' +
+        'qrystock?flds=ProductName,Stock,SPrice,PPrice,ProductID' +
           ' &filter=' +
           filter +
-          '&orderby=AcctID'
+          '&orderby=ProductID'
       )
       .then((r: any) => {
         this.setting.Columns = this.colProducts;
-        this.data = r;
+        // Transform the data to match expected format  
+        this.data = r.map((item: any) => ({
+          Date: new Date().toLocaleDateString(),
+          RefID: 'STK-' + item.ProductID,
+          CustomerName: item.ProductName,
+          QtyIn: item.Stock > 0 ? item.Stock : 0,
+          QtyOut: item.Stock < 0 ? Math.abs(item.Stock) : 0,
+          Balance: item.Stock
+        }));
+      })
+      .catch((error: any) => {
+        console.error('Error loading products data:', error);
+        this.data = [];
       });
   }
-  Clicked(e) {}
+  Clicked(e: any) {}
   PrintReport() {
     this.ps.PrintData.HTMLData = document.getElementById('print-section');
     this.ps.PrintData.Title = 'Product Accounts';
@@ -156,11 +182,11 @@ export class StockAcctsComponent implements OnInit {
       ' To: ' +
       JSON2Date(this.Filter.ToDate) +
       ' Product: ' +
-      this.cmbProduct.text;
+      (this.cmbProduct ? this.cmbProduct.text : 'All');
     this.router.navigateByUrl('/print/print-html');
   }
-  CustomerSelected(e) {}
-  formatDate(d) {
+  CustomerSelected(e: any) {}
+  formatDate(d: any) {
     return JSON2Date(d);
   }
 }

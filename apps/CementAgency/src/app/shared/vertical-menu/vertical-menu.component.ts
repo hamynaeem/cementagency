@@ -53,17 +53,17 @@ export class VerticalMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   ngOnInit() {
+    // Initialize menuItems as empty array first
+    this.menuItems = [];
 
-
-    //  this.menuItems = this.LoadMenu();
-
-
-    this.navigation.getFilteredRoutes().subscribe(r=>{
-      console.log(r);
-
-      this.menuItems = r;
-    })
-
+    // Load menu items asynchronously
+    setTimeout(() => {
+      this.navigation.getFilteredRoutes().subscribe(r => {
+        console.log(r);
+        this.menuItems = r;
+        this.cdr.detectChanges(); // Manually trigger change detection
+      });
+    });
   }
   LoadMenu() {
 
@@ -99,23 +99,24 @@ export class VerticalMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   ngAfterViewInit() {
-
-    this.configSub = this.configService.templateConf$.subscribe((templateConf) => {
-      if (templateConf) {
-        this.config = templateConf;
-      }
-      this.loadLayout();
-      this.cdr.markForCheck();
-
-    });
-
-    this.layoutSub = this.layoutService.overlaySidebarToggle$.subscribe(
-      collapse => {
-        if (this.config.layout.menuPosition === "Side") {
-          this.collapseSidebar = collapse;
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.configSub = this.configService.templateConf$.subscribe((templateConf) => {
+        if (templateConf) {
+          this.config = templateConf;
         }
+        this.loadLayout();
+        this.cdr.detectChanges(); // Use detectChanges instead of markForCheck
       });
 
+      this.layoutSub = this.layoutService.overlaySidebarToggle$.subscribe(
+        collapse => {
+          if (this.config.layout.menuPosition === "Side") {
+            this.collapseSidebar = collapse;
+            this.cdr.detectChanges();
+          }
+        });
+    });
   }
 
 
@@ -127,23 +128,23 @@ export class VerticalMenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resizeTimeout = setTimeout((() => {
       this.innerWidth = event.target.innerWidth;
       this.loadLayout();
+      this.cdr.detectChanges(); // Use detectChanges for consistency
     }).bind(this), 500);
   }
 
   loadLayout() {
-
     if (this.config.layout.menuPosition === "Top") { // Horizontal Menu
       if (this.innerWidth < 1200) { // Screen size < 1200
         this.menuItems = HROUTES;
       }
     }
     else if (this.config.layout.menuPosition === "Side") { // Vertical Menu{
-      // this.menuItems = ROUTES;
-      this.menuItems = this.LoadMenu();
+      // Use setTimeout to prevent ExpressionChangedAfterItHasBeenCheckedError
+      setTimeout(() => {
+        this.menuItems = this.LoadMenu();
+        this.cdr.detectChanges();
+      });
     }
-
-
-
 
     if (this.config.layout.sidebar.backgroundColor === 'white') {
       this.logoUrl = 'assets/img/logos/logo-dark.png';

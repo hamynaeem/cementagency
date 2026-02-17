@@ -27,18 +27,18 @@ class Tasks extends REST_Controller
     }
     public function index_get()
     {
-        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers');
+        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, authorization');
         $this->response(null, REST_Controller::HTTP_OK);
     }
     public function index_options()
     {
-        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers');
+        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, authorization');
         $this->response(null, REST_Controller::HTTP_OK);
     }
 
     public function index_post()
     {
-        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers');
+        header('Access-Control-Allow-Headers: X-Requested-With, content-type, access-control-allow-origin, access-control-allow-methods, access-control-allow-headers, authorization');
         $this->response(true, REST_Controller::HTTP_OK);
     }
     public function savedelivery_post()
@@ -404,42 +404,108 @@ class Tasks extends REST_Controller
     }
     public function vouchers_post($id = 0)
     {
-        $data = $this->post();
-        // $date['Date'] = date('Y-m-d');
-        $vouch = [
-            'Date'        => $data['Date'],
-            'CustomerID'  => $data['CustomerID'],
-            'Description' => $data['Description'],
-            'Debit'       => $data['Debit'],
-            'Credit'      => $data['Credit'],
-            'RefID'       => $data['RefID'],
-            'IsPosted'    => $data['IsPosted'],
-            'FinYearID'   => $data['FinYearID'],
-            'RefType'     => $data['RefType'],
+        try {
+            $data = $this->post();
+            
+            // Log the incoming data for debugging
+            log_message('debug', 'Vouchers POST data: ' . json_encode($data));
+            log_message('debug', 'Vouchers POST ID parameter: ' . $id);
+            
+            // Validate required fields
+            if (!isset($data['CustomerID']) || !isset($data['Date'])) {
+                log_message('error', 'Missing required fields in voucher data: ' . json_encode($data));
+                $this->response([
+                    'status' => false,
+                    'message' => 'Missing required fields: CustomerID and Date'
+                ], REST_Controller::HTTP_BAD_REQUEST);
+                return;
+            }
+            
+            // Prepare voucher data with all database columns
+            $vouch = [
+                'Date'        => $data['Date'],
+                'CustomerID'  => $data['CustomerID'],
+                'Description' => isset($data['Description']) ? $data['Description'] : '',
+                'Debit'       => isset($data['Debit']) ? $data['Debit'] : 0,
+                'Credit'      => isset($data['Credit']) ? $data['Credit'] : 0,
+                'RefID'       => isset($data['RefID']) ? $data['RefID'] : 0,
+                'RefType'     => isset($data['RefType']) ? $data['RefType'] : 1,
+                'FinYearID'   => isset($data['FinYearID']) ? $data['FinYearID'] : 0,
+                'IsPosted'    => isset($data['IsPosted']) ? $data['IsPosted'] : 0,
+                'BusinessID'  => isset($data['BusinessID']) ? $data['BusinessID'] : 1
+            ];
+            
+            // Handle AcctType field mapping
+            if (isset($data['AcctTypeID'])) {
+                $vouch['AcctType'] = $data['AcctTypeID'];
+            } elseif (isset($data['AcctType'])) {
+                $vouch['AcctType'] = $data['AcctType'];
+            }
+            
+            // Simple date validation
+            if (empty($vouch['Date']) || !strtotime($vouch['Date'])) {
+                $this->response([
+                    'status' => false,
+                    'message' => 'Invalid date format'
+                ], REST_Controller::HTTP_BAD_REQUEST);
+                return;
+            }
 
-            'BusinessID'  => $data['BusinessID'],
-        ];
-        if (! $this->validateDate($vouch['Date'], 'Y-m-d')) {
+            $this->db->trans_begin();
+            
+            if ($id != 0) {
+                // Update existing voucher
+                $this->db->where('VoucherID', $id);
+                $result = $this->db->update('vouchers', $vouch);
+                if (!$result) {
+                    $error = $this->db->error();
+                    log_message('error', 'Voucher update failed: ' . json_encode($error));
+                    throw new Exception('Update failed: ' . $error['message']);
+                }
+            } else {
+                // Create new voucher - use simple max+1 approach
+                $query = $this->db->query('SELECT COALESCE(MAX(VoucherID), 0) + 1 as next_id FROM vouchers');
+                if ($query && $query->num_rows() > 0) {
+                    $result = $query->row();
+                    $nextId = $result->next_id;
+                } else {
+                    // Fallback if query fails
+                    $nextId = 1;
+                    log_message('error', 'Could not get next voucher ID, using fallback: ' . $nextId);
+                }
+                
+                $vouch['VoucherID'] = $nextId;
+                
+                $result = $this->db->insert('vouchers', $vouch);
+                if (!$result) {
+                    $error = $this->db->error();
+                    log_message('error', 'Voucher insert failed: ' . json_encode($error) . ' Data: ' . json_encode($vouch));
+                    throw new Exception('Insert failed: ' . $error['message']);
+                }
+                $id = $nextId;
+            }
+            
+            if ($this->db->trans_status() === FALSE) {
+                $this->db->trans_rollback();
+                $this->response([
+                    'status' => false,
+                    'message' => 'Transaction failed'
+                ], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+            } else {
+                $this->db->trans_commit();
+                $this->response(['status' => true, 'id' => $id], REST_Controller::HTTP_OK);
+            }
+            
+        } catch (Exception $e) {
+            if ($this->db->trans_status() !== FALSE) {
+                $this->db->trans_rollback();
+            }
+            log_message('error', 'Vouchers POST error: ' . $e->getMessage());
             $this->response([
-                'status'  => false,
-                'message' => 'Invalid Date Format'], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
-            return;
+                'status' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        if ($id != 0) {
-            $this->db->where('VoucherID', $id);
-            $this->db->update('vouchers', $vouch);
-        } else {
-
-            $this->db->reset_query();
-
-            $maxInvoiceID = $this->utilities->getBillNo($this->db, $vouch['BusinessID'], 3, $vouch['Date']) + 1;
-
-            $vouch['VoucherID'] = $maxInvoiceID;
-            $this->db->insert('vouchers', $vouch);
-            $id = $maxInvoiceID;
-        }
-        $this->response(['id' => $id], REST_Controller::HTTP_OK);
     }
     public function grouprights_post($id = null)
     {

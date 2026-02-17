@@ -138,7 +138,8 @@
           "browserTarget": "CementAgency:build:production"
         },
         "development": {
-          "browserTarget": "CementAgency:build:development"
+          "browserTarget": "CementAgency:build:development",
+          "proxyConfig": "cement.proxy.conf.json"
         }
       },
       "defaultConfiguration": "development"

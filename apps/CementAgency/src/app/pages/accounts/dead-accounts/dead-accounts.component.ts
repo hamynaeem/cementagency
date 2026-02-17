@@ -206,4 +206,21 @@ export class DeadAccountsComponent implements OnInit {
       showConfirmButton: false
     });
   }
+
+  // Getter methods for template bindings
+  getDeadAccountsCount(): number {
+    return this.deadAccounts.filter(a => a.Status === 'Dead').length;
+  }
+
+  getInactiveAccountsCount(): number {
+    return this.deadAccounts.filter(a => a.Status === 'Inactive').length;
+  }
+
+  getClosedAccountsCount(): number {
+    return this.deadAccounts.filter(a => a.Status === 'Closed').length;
+  }
+
+  getTotalBalance(): number {
+    return this.deadAccounts.reduce((sum, a) => sum + a.Balance, 0);
+  }
 }

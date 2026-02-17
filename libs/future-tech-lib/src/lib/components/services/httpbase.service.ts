@@ -279,11 +279,9 @@ export class HttpBase {
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
     if (currentUser && currentUser.token) {
       const headers = new HttpHeaders({
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers":
-        "Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With",
-        "Access-Control-Allow-Methods": "GET, PUT, POST",
-        Authorization: "Bearer " + currentUser.token,
+        "Authorization": "Bearer " + currentUser.token,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
       });
       return headers;
     }

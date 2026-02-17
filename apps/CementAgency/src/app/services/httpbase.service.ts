@@ -28,7 +28,7 @@ export class HttpBase {
 
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + table, { headers: this.jwt(), params })
+        .get(this.apiUrl + 'index.php/apis/' + table, { headers: this.jwt(), params })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -50,7 +50,7 @@ export class HttpBase {
 
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl.replace('/apis/', '/') + 'tasks/' + ApiEndPoint, {
+        .get(this.apiUrl + 'index.php/tasks/' + ApiEndPoint, {
           headers: this.jwt(),
           params,
         })
@@ -68,7 +68,7 @@ export class HttpBase {
   Delete(table: string, id: string) {
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'delete/' + table + '/' + id, {
+        .get(this.apiUrl + 'index.php/apis/delete/' + table + '/' + id, {
           headers: this.jwt(),
         })
         .subscribe({
@@ -101,7 +101,7 @@ export class HttpBase {
   delTask(table, id) {
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl.replace('/apis/', '/') + 'tasks/' + table + '/' + id, { headers: this.jwt() })
+        .get(this.apiUrl + 'index.php/tasks/' + table + '/' + id, { headers: this.jwt() })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -121,7 +121,7 @@ export class HttpBase {
       headers.append('Content-Type', 'application/json');
 
       this.http
-        .post(this.apiUrl + url, data, { headers: this.jwt() })
+        .post(this.apiUrl + 'index.php/apis/' + url, data, { headers: this.jwt() })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -139,7 +139,7 @@ export class HttpBase {
       headers.append('Accept', 'application/json');
       headers.append('Content-Type', 'application/json');
       this.http
-        .post(this.apiUrl + 'datatables/' + table, data, {
+        .post(this.apiUrl + 'index.php/apis/datatables/' + table, data, {
           headers: this.jwt(),
         })
         .subscribe({
@@ -161,7 +161,7 @@ export class HttpBase {
       headers.append('Content-Type', 'application/json');
 
       this.http
-        .get(this.apiUrl + 'reports/' + filter, { headers: this.jwt() })
+        .get(this.apiUrl + 'index.php/apis/reports/' + filter, { headers: this.jwt() })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -184,7 +184,7 @@ export class HttpBase {
       data.BusinessID = this.getBusinessID();
 
       this.http
-        .post(this.apiUrl.replace('/apis/', '/') + 'tasks/' + url, data, {
+        .post(this.apiUrl + 'index.php/tasks/' + url, data, {
           headers: this.jwt(),
           params,
         })
@@ -277,11 +277,9 @@ export class HttpBase {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
     if (currentUser && currentUser.token) {
       const headers = new HttpHeaders({
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers':
-          'Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With',
-        'Access-Control-Allow-Methods': 'GET, PUT, POST',
-        Authorization: 'Bearer ' + currentUser.token,
+        'Authorization': 'Bearer ' + currentUser.token,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       });
       return headers;
     }

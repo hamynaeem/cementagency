@@ -16,7 +16,7 @@ export class AuthenticationService {
       const param = { username, password, date, BusinessID };
 
       this.http
-        .post(environment.AUTH_URL + "login/" , param, { headers: headers })
+        .post(environment.AUTH_URL + "login" , param, { headers: headers })
         .subscribe(
           (res) => {
             resolve(res);

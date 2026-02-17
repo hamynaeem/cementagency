@@ -240,7 +240,7 @@
           <div class="card-body">
             <div class="d-flex justify-content-between">
               <div>
-                <h4>{{deadAccounts.filter(a => a.Status === 'Dead').length}}</h4>
+                <h4>{{getDeadAccountsCount()}}</h4>
                 <small>Dead Accounts</small>
               </div>
               <div class="align-self-center">
@@ -255,7 +255,7 @@
           <div class="card-body">
             <div class="d-flex justify-content-between">
               <div>
-                <h4>{{deadAccounts.filter(a => a.Status === 'Inactive').length}}</h4>
+                <h4>{{getInactiveAccountsCount()}}</h4>
                 <small>Inactive Accounts</small>
               </div>
               <div class="align-self-center">
@@ -270,7 +270,7 @@
           <div class="card-body">
             <div class="d-flex justify-content-between">
               <div>
-                <h4>{{deadAccounts.filter(a => a.Status === 'Closed').length}}</h4>
+                <h4>{{getClosedAccountsCount()}}</h4>
                 <small>Closed Accounts</small>
               </div>
               <div class="align-self-center">
@@ -285,7 +285,7 @@
           <div class="card-body">
             <div class="d-flex justify-content-between">
               <div>
-                <h4>{{deadAccounts.reduce((sum, a) => sum + a.Balance, 0) | currency:'PKR':'symbol':'1.0-0'}}</h4>
+                <h4>{{getTotalBalance() | currency:'PKR':'symbol':'1.0-0'}}</h4>
                 <small>Total Balance</small>
               </div>
               <div class="align-self-center">

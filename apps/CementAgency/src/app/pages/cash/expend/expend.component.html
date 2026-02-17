@@ -50,9 +50,32 @@
                   class="custom"
                   [selectOnTab]="true"
                   [searchable]="true"
-                  placeholder="Select Expense Head"
+                  placeholder="Search and select account..."
                 >
+                  <!-- Custom template for each option -->
+                  <ng-option *ngFor="let head of ExpenseHeads" [value]="head.HeadID">
+                    <div class="account-option">
+                      <div class="account-name">{{ head.Head }}</div>
+                      <div class="account-details text-muted small">
+                        <span class="account-type">{{ head.AcctType }}</span>
+                        <span *ngIf="head.Balance !== undefined && head.Balance !== 0" class="account-balance ml-2">
+                          Balance: {{ head.Balance | currency:'Rs':'symbol':'1.0-0' }}
+                        </span>
+                      </div>
+                    </div>
+                  </ng-option>
                 </ng-select>
+                
+                <!-- Display selected account info -->
+                <div *ngIf="Voucher.HeadID" class="selected-account-info mt-2 p-2 bg-light rounded">
+                  <small class="text-muted">
+                    <strong>Selected:</strong> {{ getSelectedAccountName() }}
+                    <span class="ml-2">Type: {{ getSelectedAccountType() }}</span>
+                    <span *ngIf="getSelectedAccountBalance() > 0" class="ml-2">
+                      Balance: {{ getSelectedAccountBalance() | currency:'Rs':'symbol':'1.0-0' }}
+                    </span>
+                  </small>
+                </div>
               </div>
             </div>
             <div class="row form-group">

@@ -51,7 +51,16 @@ export function RoundTo(num: number, dgt: number) {
 }
 
 export function getCurDate() {
-  return JSON.parse(localStorage.getItem('currentUser')|| "{}").date;
+  try {
+    const userDate = JSON.parse(localStorage.getItem('currentUser') || "{}").date;
+    if (userDate) {
+      const date = new Date(userDate);
+      return isNaN(date.getTime()) ? new Date() : date;
+    }
+  } catch (e) {
+    console.warn('Invalid date in localStorage:', e);
+  }
+  return new Date();
 }
 
 export function getCurrentTime(tim = null) {
@@ -79,14 +88,60 @@ export function getDMYDate(dte: Date | null = null) {
 }
 
 export function JSON2Date(d) {
-  return d.year + '-' + d.month + '-' + d.day;
+  // Handle string dates (e.g., "2025-09-23")
+  if (typeof d === 'string') {
+    // If it's already in YYYY-MM-DD format, return it as is
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (dateRegex.test(d)) {
+      return d;
+    }
+    // Try to parse the string as a date
+    const parsedDate = new Date(d);
+    if (!isNaN(parsedDate.getTime())) {
+      const year = parsedDate.getFullYear();
+      const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0');
+      const day = parsedDate.getDate().toString().padStart(2, '0');
+      return year + '-' + month + '-' + day;
+    }
+  }
+  
+  // Handle null, undefined, or invalid date objects
+  if (!d || typeof d !== 'object' || !d.year || !d.month || !d.day) {
+    console.warn('Invalid date object passed to JSON2Date:', d);
+    const defaultDate = GetDateJSON();
+    d = defaultDate;
+  }
+  
+  const month = d.month.toString().padStart(2, '0');
+  const day = d.day.toString().padStart(2, '0');
+  return d.year + '-' + month + '-' + day;
 }
 
 export function GetDateJSON(dte: Date|null= null) {
-  let d = new Date(JSON.parse(localStorage.getItem("currentUser") || "{}").date);
+  let d = new Date();
+  
   if (dte) {
     d = dte;
+  } else {
+    try {
+      const userDate = JSON.parse(localStorage.getItem("currentUser") || "{}").date;
+      if (userDate) {
+        const parsedDate = new Date(userDate);
+        if (!isNaN(parsedDate.getTime())) {
+          d = parsedDate;
+        }
+      }
+    } catch (e) {
+      console.warn('Invalid date in localStorage, using current date:', e);
+    }
   }
+  
+  // Ensure d is a valid Date object
+  if (!(d instanceof Date) || isNaN(d.getTime())) {
+    console.warn('Invalid date object, using current date:', d);
+    d = new Date();
+  }
+  
   return {
     year: d.getFullYear(),
     month: d.getMonth() + 1,

@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   Component,
+  ElementRef,
   Input,
   OnChanges,
   OnInit,
@@ -77,16 +78,16 @@ interface SaleDetail {
 export class BookingInvoiceComponent
   implements OnInit, OnChanges, AfterViewInit
 {
-  @Input() Type: string;
+  @Input() Type: string = '';
   @Input() EditID = '';
 
   selectedProduct: any;
-  @ViewChild('fromBooking') fromBooking;
-  @ViewChild('cmbProduct') cmbProd;
-  @ViewChild('qty') elQty;
-  @ViewChild('cmbCustomers') cmbCustomers;
-  @ViewChild('btnBar') btnBar: ButtonsBarComponent;
-  @ViewChild('ordersModalTemplate') ordersModalTemplate: TemplateRef<any>;
+  @ViewChild('fromBooking') fromBooking?: ElementRef;
+  @ViewChild('cmbProduct') cmbProd?: ElementRef;
+  @ViewChild('qty') elQty?: ElementRef;
+  @ViewChild('cmbCustomers') cmbCustomers?: ElementRef;
+  @ViewChild('btnBar') btnBar?: ButtonsBarComponent;
+  @ViewChild('ordersModalTemplate') ordersModalTemplate?: TemplateRef<any>;
 
   public data = new LocalDataSource([]);
   Ino = '';
@@ -97,11 +98,11 @@ export class BookingInvoiceComponent
   // Modal reference
   modalRef?: BsModalRef;
 
-  public booking: Booking;
-  bookingDetail: BookingDetail;
+  public booking!: Booking;
+  bookingDetail!: BookingDetail;
 
-  sale: Sale;
-  saleDetail: SaleDetail;
+  sale!: Sale;
+  saleDetail!: SaleDetail;
 
   public Products: any = [];
   public SelectedProduct: any = {};
@@ -133,18 +134,28 @@ export class BookingInvoiceComponent
   }
 
   ngOnInit() {
+    console.log('BookingInvoiceComponent: ngOnInit started');
     this.Cancel();
     this.cachedData.Products$.subscribe((products: any[]) => {
-      this.Products = products;
+      console.log('Products data received:', products?.length || 0);
+      this.Products = products || [];
     });
-    this.cachedData.Accounts$.subscribe((accounts: any[]) => {
-      this.Customers = accounts.filter(
-        (c) => c.AcctType.toUpperCase() === 'CUSTOMERS'
-      );
-      this.Suppliers = accounts.filter(
-        (c) => c.AcctType.toUpperCase() === 'SUPPLIERS'
-      );
+    this.cachedData.Customers$.subscribe((customers: any[]) => {
+      console.log('Customers data received:', customers);
+      this.Customers = customers || [];
+      console.log('Customers count:', this.Customers.length);
     });
+    
+    this.cachedData.Suppliers$.subscribe((suppliers: any[]) => {
+      console.log('Suppliers data received:', suppliers);
+      this.Suppliers = suppliers || [];
+      console.log('Suppliers count:', this.Suppliers.length);
+    });
+    
+    // Force update customers and suppliers data
+    this.cachedData.updateCustomers();
+    this.cachedData.updateSuppliers();
+    
     this.activatedRoute.params.subscribe((params: Params) => {
       if (params.EditID) {
         this.EditID = params.EditID;
@@ -206,7 +217,7 @@ export class BookingInvoiceComponent
       return;
     }
 
-    if (this.fromBooking.valid) {
+    if (this.fromBooking?.nativeElement?.form?.checkValidity()) {
       // Save booking data
       const data = {
         ...this.booking,
@@ -279,8 +290,8 @@ export class BookingInvoiceComponent
     this.bookingDetail.ProductID = undefined;
     this.bookingDetail.Qty = 0;
     this.bookingDetail.Price = 0;
-    if (this.cmbProd) {
-      this.cmbProd.focus();
+    if (this.cmbProd?.nativeElement) {
+      this.cmbProd.nativeElement.focus();
     }
   }
   removeItem() {
@@ -346,8 +357,8 @@ export class BookingInvoiceComponent
     }
     this.saleData.push(saleItem);
     this.calcSaleData();
-    if (this.cmbCustomers) {
-      this.cmbCustomers.focus();
+    if (this.cmbCustomers?.nativeElement) {
+      this.cmbCustomers.nativeElement.focus();
     }
     this.saleDetail.ProductID = undefined;
     this.saleDetail.Qty = 0;
@@ -419,7 +430,7 @@ export class BookingInvoiceComponent
       }
     });
   }
-  deleteSaleItem(idx){
+  deleteSaleItem(idx: number): void {
     this.saleData.splice(idx, 1);
     this.calcSaleData();
   }
@@ -436,11 +447,13 @@ export class BookingInvoiceComponent
         this.confirmedOrders = orders || [];
 
         // Show the modal using BsModalService
-        this.modalRef = this.modalService.show(this.ordersModalTemplate, {
-          class: 'modal-lg',
-          backdrop: 'static',
-          keyboard: false
-        });
+        if (this.ordersModalTemplate) {
+          this.modalRef = this.modalService.show(this.ordersModalTemplate, {
+            class: 'modal-lg',
+            backdrop: 'static',
+            keyboard: false
+          });
+        }
       })
       .catch((error) => {
         console.error('Error loading confirmed orders:', error);
@@ -463,13 +476,13 @@ export class BookingInvoiceComponent
       this.saleDetail.Amount = order.Total;
 
       // Find and set the customer name for display
-      const selectedCustomer = this.Customers.find(c => c.CustomerID == order.CustomerID);
+      const selectedCustomer = this.Customers.find((c: any) => c.CustomerID == order.CustomerID);
       if (selectedCustomer) {
         this.saleDetail.CustomerName = selectedCustomer.CustomerName;
       }
 
       // Find and set the product name for display
-      const selectedProduct = this.Products.find(p => p.ProductID == order.ProductID);
+      const selectedProduct = this.Products.find((p: any) => p.ProductID == order.ProductID);
       if (selectedProduct) {
         this.saleDetail.ProductName = selectedProduct.ProductName;
       }

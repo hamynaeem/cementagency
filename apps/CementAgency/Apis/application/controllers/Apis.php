@@ -296,26 +296,112 @@ class Apis extends REST_Controller
             $this->response([['result' => 'Error', 'message' => 'Table does not exists']], REST_Controller::HTTP_NOT_FOUND);
         } else {
             $post_data = $this->post();
-            if (isset($post_data['BusinessID'])) {
-                unset($post_data['BusinessID']);
+            $businessId = $post_data['BusinessID'] ?? null;
+            
+            // Special handling for vouchers table
+            if ($table === 'vouchers') {
+                try {
+                    // Log the incoming voucher data
+                    log_message('debug', 'Apis vouchers POST data: ' . json_encode($post_data));
+                    log_message('debug', 'Apis vouchers ID parameter: ' . $id);
+                    
+                    // Validate required fields
+                    if (!isset($post_data['CustomerID']) || !isset($post_data['Date'])) {
+                        log_message('error', 'Missing required fields in voucher data: ' . json_encode($post_data));
+                        $this->response([
+                            'result' => 'Error',
+                            'message' => 'Missing required fields: CustomerID and Date'
+                        ], REST_Controller::HTTP_BAD_REQUEST);
+                        return;
+                    }
+                    
+                    // Map to actual database columns (BusinessID exists in table)
+                    $voucherData = [
+                        'Date' => $post_data['Date'],
+                        'CustomerID' => $post_data['CustomerID'],
+                        'Description' => $post_data['Description'] ?? '',
+                        'Debit' => $post_data['Debit'] ?? 0,
+                        'Credit' => $post_data['Credit'] ?? 0,
+                        'RefID' => $post_data['RefID'] ?? 0,
+                        'RefType' => $post_data['RefType'] ?? 1,
+                        'FinYearID' => $post_data['FinYearID'] ?? 0,
+                        'IsPosted' => $post_data['IsPosted'] ?? 0,
+                        'AcctType' => $post_data['AcctTypeID'] ?? $post_data['AcctType'] ?? null,
+                        'BusinessID' => $businessId
+                    ];
+                    
+                    if ($id == null && !isset($post_data['VoucherID'])) {
+                        // Generate new VoucherID for new vouchers using simple approach
+                        $query = $this->db->query('SELECT COALESCE(MAX(VoucherID), 0) + 1 as next_id FROM vouchers');
+                        if ($query && $query->num_rows() > 0) {
+                            $result = $query->row();
+                            $maxVoucherID = $result->next_id;
+                        } else {
+                            // Fallback if query fails
+                            $maxVoucherID = 1;
+                        }
+                        $voucherData['VoucherID'] = $maxVoucherID;
+                        $id = $maxVoucherID;
+                    }
+                    
+                    $post_data = $voucherData;
+                    
+                } catch (Exception $e) {
+                    $this->response([
+                        'result' => 'Error',
+                        'message' => 'Voucher processing error: ' . $e->getMessage()
+                    ], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+                    return;
+                }
+            } else {
+                if (isset($post_data['BusinessID'])) {
+                    unset($post_data['BusinessID']);
+                }
             }
 
             if ($id == null) {
-                $this->db->insert($table, $post_data);
-                $id = $this->db->insert_id();
-                $this->db->select("*")
-                    ->from($table)
-                    ->where($this->getpkey($table), $id);
-                $this->getOne($this->db->get_compiled_select());
+                // Start transaction for proper error handling
+                $this->db->trans_begin();
+                
+                if ($this->db->insert($table, $post_data)) {
+                    // Verify the insert actually worked
+                    $insertId = ($table === 'vouchers') ? $post_data['VoucherID'] : $this->db->insert_id();
+                    
+                    if ($table === 'vouchers') {
+                        // For vouchers, verify the record was actually inserted
+                        $verify = $this->db->get_where('vouchers', ['VoucherID' => $insertId])->row();
+                        if (!$verify) {
+                            $this->db->trans_rollback();
+                            log_message('error', 'Voucher insert verification failed for ID: ' . $insertId);
+                            $this->response([
+                                'result' => 'Error',
+                                'message' => 'Insert verification failed - record not found in database'
+                            ], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+                            return;
+                        }
+                    }
+                    
+                    $this->db->trans_commit();
+                    $this->response(['result' => 'Success', 'id' => $insertId], REST_Controller::HTTP_OK);
+                } else {
+                    $this->db->trans_rollback();
+                    $error = $this->db->error();
+                    log_message('error', 'Database insert failed for table ' . $table . ': ' . json_encode($error));
+                    $this->response([
+                        'result' => 'Error', 
+                        'message' => 'Insert failed: ' . $error['message']
+                    ], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+                }
             } else {
                 $this->db->where($this->getpkey($table), $id);
                 if ($this->db->update($table, $post_data)) {
-                    $this->db->select("*")
-                        ->from($table)
-                        ->where($this->getpkey($table), $id);
-                    $this->getOne($this->db->get_compiled_select());
+                    $this->response(['result' => 'Success', 'id' => $id], REST_Controller::HTTP_OK);
                 } else {
-                    $this->response(['result' => 'Error', 'message' => $this->db->error()], REST_Controller::HTTP_BAD_REQUEST);
+                    $error = $this->db->error();
+                    $this->response([
+                        'result' => 'Error', 
+                        'message' => 'Update failed: ' . $error['message']
+                    ], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
                 }
             }
         }
