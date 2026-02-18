@@ -12,6 +12,24 @@ use \Firebase\JWT\JWT;
 class Apis extends REST_Controller
 {
     public $userID = 0;
+    
+    // Placeholder for /apis/qrystock GET endpoint
+    public function qrystock_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
+    
+    // Placeholder for /apis/qryproducts GET endpoint
+    public function qryproducts_get() {
+        // Sample product data
+        $sampleProducts = [
+            ['ItemID' => 1, 'ItemName' => 'Cement Bag 40kg'],
+            ['ItemID' => 2, 'ItemName' => 'Cement Bag 25kg'],
+            ['ItemID' => 3, 'ItemName' => 'Steel Rod 12mm'],
+            ['ItemID' => 4, 'ItemName' => 'Steel Rod 16mm'],
+            ['ItemID' => 5, 'ItemName' => 'Concrete Mix']
+        ];
+        $this->response($sampleProducts, REST_Controller::HTTP_OK);
+    }
     public function __construct()
     {
         header('Access-Control-Allow-Origin: *');
@@ -507,6 +525,30 @@ class Apis extends REST_Controller
 
         $this->response($query, REST_Controller::HTTP_OK);
     }
+    
+    public function usergrouprights_get($groupid = '')
+    {
+        $this->load->database();
+        
+        if (!empty($groupid)) {
+            $this->db->where('groupid', $groupid);
+        }
+        
+        // Check if filter parameter is provided via GET
+        $filter = $this->get('filter');
+        if (!empty($filter)) {
+            // Parse filter like "groupid=1"
+            if (strpos($filter, '=') !== false) {
+                list($field, $value) = explode('=', $filter, 2);
+                $this->db->where(trim($field), trim($value));
+            }
+        }
+        
+        $query = $this->db->get('usergrouprights')->result_array();
+        
+        $this->response($query, REST_Controller::HTTP_OK);
+    }
+    
     public function getmonthvise_get($dte = '')
     {
         if (! $this->checkToken()) {

@@ -28,7 +28,7 @@ export class HttpBase {
 
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'index.php/apis/' + table, { headers: this.jwt(), params })
+        .get(this.apiUrl + table, { headers: this.jwt(), params })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -50,7 +50,7 @@ export class HttpBase {
 
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'index.php/tasks/' + ApiEndPoint, {
+        .get(this.apiUrl + 'tasks/' + ApiEndPoint, {
           headers: this.jwt(),
           params,
         })
@@ -68,7 +68,7 @@ export class HttpBase {
   Delete(table: string, id: string) {
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'index.php/apis/delete/' + table + '/' + id, {
+        .get(this.apiUrl + 'delete/' + table + '/' + id, {
           headers: this.jwt(),
         })
         .subscribe({
@@ -101,7 +101,7 @@ export class HttpBase {
   delTask(table, id) {
     return new Promise((resolve, reject) => {
       this.http
-        .get(this.apiUrl + 'index.php/tasks/' + table + '/' + id, { headers: this.jwt() })
+        .get(this.apiUrl + 'tasks/' + table + '/' + id, { headers: this.jwt() })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -121,7 +121,7 @@ export class HttpBase {
       headers.append('Content-Type', 'application/json');
 
       this.http
-        .post(this.apiUrl + 'index.php/apis/' + url, data, { headers: this.jwt() })
+        .post(this.apiUrl + url, data, { headers: this.jwt() })
         .subscribe({
           next: (res) => {
             resolve(res);
@@ -139,7 +139,7 @@ export class HttpBase {
       headers.append('Accept', 'application/json');
       headers.append('Content-Type', 'application/json');
       this.http
-        .post(this.apiUrl + 'index.php/apis/datatables/' + table, data, {
+        .post(this.apiUrl + 'datatables/' + table, data, {
           headers: this.jwt(),
         })
         .subscribe({
@@ -161,7 +161,7 @@ export class HttpBase {
       headers.append('Content-Type', 'application/json');
 
       this.http
-        .get(this.apiUrl + 'index.php/apis/reports/' + filter, { headers: this.jwt() })
+        .get(this.apiUrl + 'reports/' + filter, { headers: this.jwt() })
         .subscribe({
           next: (res) => {
             resolve(res);

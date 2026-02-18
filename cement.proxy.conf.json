@@ -1,6 +1,15 @@
 {
+  "/apis/auth/*": {
+    "target": "http://localhost/cementapis/",
+    "secure": false,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/apis/auth": "index.php/auth"
+    },
+    "changeOrigin": true
+  },
   "/apis/*": {
-    "target": "http://localhost:8000/",
+    "target": "http://localhost/cementapis/",
     "secure": false,
     "logLevel": "debug",
     "pathRewrite": {

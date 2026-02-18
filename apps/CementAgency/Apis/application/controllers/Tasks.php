@@ -10,6 +10,31 @@ use Restserver\Libraries\REST_Controller;
 use \Firebase\JWT\JWT;
 
 class Tasks extends REST_Controller
+    // Dashboard summary endpoints (placeholders)
+    public function salesSummary_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
+    public function purchaseSummary_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
+    public function inventorySummary_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
+    public function topSellingProducts_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
+    public function topCustomers_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
+    public function cashFlowSummary_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
+    public function monthlySalesData_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
+    public function monthlyPurchaseData_get() {
+        $this->response([], REST_Controller::HTTP_OK);
+    }
 {
     private $userID = 0;
     public function __construct()
