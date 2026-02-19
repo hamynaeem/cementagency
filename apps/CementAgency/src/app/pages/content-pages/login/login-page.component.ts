@@ -48,7 +48,9 @@ export class LoginPageComponent implements OnInit {
       return;
     }
 
-    let businiess = this.businesses.find(
+    // Ensure businesses is an array before calling find
+    const businessesArray = Array.isArray(this.businesses) ? this.businesses : [];
+    let businiess = businessesArray.find(
       b=> b.BusinessID == this.loginForm.value.BusinessID
     )
 
@@ -87,8 +89,13 @@ export class LoginPageComponent implements OnInit {
 
     this.auth.logout();
     this.http.getData('blist').then(s=>{
-      this.businesses = s;
-    })
+      // Ensure businesses is always an array
+      this.businesses = Array.isArray(s) ? s : [];
+    }).catch(error => {
+      console.error('Error loading businesses:', error);
+      this.businesses = [];
+      this.myToaster.Error('Failed to load business list', 'Error', 2);
+    });
     this.returnUrl = this.route.snapshot.queryParams.returnUrl || '/';
   }
 

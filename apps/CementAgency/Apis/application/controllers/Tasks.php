@@ -608,6 +608,16 @@ class Tasks extends REST_Controller
     {
         $this->PostVouchers($id);
     }
+    
+    public function postexpense_post($id = 0)
+    {
+        try {
+            $this->PostExpense($id);
+            $this->response(['status' => true, 'message' => 'Expense posted successfully'], REST_Controller::HTTP_OK);
+        } catch (Exception $e) {
+            $this->response(['status' => false, 'message' => 'Failed to post expense: ' . $e->getMessage()], REST_Controller::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 
     private function PostVouchers($id = 0, $bid = 0)
     {
@@ -1366,10 +1376,27 @@ class Tasks extends REST_Controller
     private function PostExpense($id = 0)
     {
         if ($id > 0) {
-            $this->db->where('BookingID', $id);
+            $this->db->where('ExpendID', $id);
         }
         $this->db->where('IsPosted', 0);
-        $this->db->update('expend', ['IsPosted' => 1]);
+        
+        // Get expense records to post
+        $expenses = $this->db->get('expend')->result_array();
+        
+        if (!empty($expenses)) {
+            $this->db->trans_begin();
+            
+            foreach ($expenses as $expense) {
+                // Add expense to accounts if needed
+                // You can implement the accounting logic here
+                
+                // Mark as posted
+                $this->db->where('ExpendID', $expense['ExpendID']);
+                $this->db->update('expend', ['IsPosted' => 1]);
+            }
+            
+            $this->db->trans_commit();
+        }
     }
 
     private function updateOrderStatus($orderIDs, $status)

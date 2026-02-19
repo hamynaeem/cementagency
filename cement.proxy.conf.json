@@ -1,6 +1,6 @@
 {
   "/apis/auth/*": {
-    "target": "http://localhost/cementapis/",
+    "target": "http://localhost:8000/",
     "secure": false,
     "logLevel": "debug",
     "pathRewrite": {
@@ -8,12 +8,30 @@
     },
     "changeOrigin": true
   },
-  "/apis/*": {
-    "target": "http://localhost/cementapis/",
+  "/apis/datatables/*": {
+    "target": "http://localhost:8000/",
     "secure": false,
     "logLevel": "debug",
     "pathRewrite": {
-      "^/apis": "index.php/apis"
+      "^/apis/datatables": "api_proxy.php?REQUEST_URI=/datatables"
+    },
+    "changeOrigin": true
+  },
+  "/apis/*": {
+    "target": "http://localhost:8000/",
+    "secure": false,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/apis": "api_proxy.php?REQUEST_URI=/apis"
+    },
+    "changeOrigin": true
+  },
+  "/datatables/*": {
+    "target": "http://localhost:8000/",
+    "secure": false,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/datatables": "api_proxy.php?REQUEST_URI=/datatables"
     },
     "changeOrigin": true
   }

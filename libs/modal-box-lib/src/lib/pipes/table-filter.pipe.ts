@@ -5,7 +5,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class FilterPipe implements PipeTransform {
   transform(Data: any, filterString: string, columns: any): any {
-    console.warn(filterString);
+    // Remove console.warn for performance - only log in development if needed
+    // console.warn(filterString);
 
     if (Data) {
       if (Data.length === 0 || ! filterString) {

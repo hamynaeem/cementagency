@@ -22,6 +22,11 @@ export class ExpendComponent implements OnInit {
   AccountTypes: any[] = [];
   EditID = '';
   curCustomer: any = {};
+  showAddModal = false;
+  newCategory = { name: '', type: 'Expense' };
+  showExpensesList = false;
+  expensesList: any[] = [];
+  loadingExpenses = false;
   constructor(
     private http: HttpBase,
     private alert: MyToastService,
@@ -150,6 +155,11 @@ export class ExpendComponent implements OnInit {
         console.log('Expense saved successfully as voucher:', r);
         this.alert.Sucess('Expense Saved Successfully!', 'Success', 1);
         this.resetForm();
+        
+        // Refresh expenses list if it's currently shown
+        if (this.showExpensesList) {
+          this.loadExpensesList();
+        }
       })
       .catch((error) => {
         console.error('Voucher method failed, trying direct expend method:', error);
@@ -169,6 +179,11 @@ export class ExpendComponent implements OnInit {
             console.log('Expense saved via direct method:', r);
             this.alert.Sucess('Expense Saved Successfully!', 'Success', 1);
             this.resetForm();
+            
+            // Refresh expenses list if it's currently shown
+            if (this.showExpensesList) {
+              this.loadExpensesList();
+            }
           })
           .catch((finalError) => {
             console.error('All save methods failed:', finalError);
@@ -255,5 +270,144 @@ The expend API endpoint needs to be fixed by your IT team.`,
   getSelectedAccountBalance(): number {
     const selected = this.ExpenseHeads.find(head => head.HeadID == Number(this.Voucher.HeadID));
     return selected ? selected.Balance || 0 : 0;
+  }
+
+  showAddCategoryModal() {
+    this.showAddModal = true;
+    this.newCategory = { name: '', type: 'Expense' };
+  }
+
+  hideAddCategoryModal() {
+    this.showAddModal = false;
+    this.newCategory = { name: '', type: 'Expense' };
+  }
+
+  addNewCategory() {
+    if (!this.newCategory.name || this.newCategory.name.trim().length < 2) {
+      this.alert.Error('Please enter a category name (at least 2 characters)', 'Validation Error');
+      return;
+    }
+
+    // Generate new HeadID (use timestamp to avoid conflicts)
+    const newHeadID = Date.now();
+    
+    // Add new category to the list
+    const newExpenseHead = {
+      HeadID: newHeadID,
+      Head: this.newCategory.name.trim(),
+      AcctType: this.newCategory.type,
+      Balance: 0
+    };
+
+    this.ExpenseHeads.push(newExpenseHead);
+    
+    // Sort the list alphabetically
+    this.ExpenseHeads.sort((a, b) => a.Head.localeCompare(b.Head));
+
+    // Select the newly added category
+    this.Voucher.HeadID = newHeadID.toString();
+
+    // Hide modal and show success message
+    this.hideAddCategoryModal();
+    this.alert.Sucess(`Category "${newExpenseHead.Head}" added successfully!`, 'Success', 1);
+
+    console.log('New expense category added:', newExpenseHead);
+  }
+
+  toggleExpensesList() {
+    this.showExpensesList = !this.showExpensesList;
+    if (this.showExpensesList && this.expensesList.length === 0) {
+      this.loadExpensesList();
+    }
+  }
+
+  loadExpensesList() {
+    this.loadingExpenses = true;
+    
+    // Try to load from qryexpense endpoint first
+    this.http.getData('qryexpense?filter=1=1&orderby=Date DESC')
+      .then((expenses: any) => {
+        console.log('Expenses loaded from qryexpense:', expenses);
+        this.expensesList = Array.isArray(expenses) ? expenses : [];
+        this.loadingExpenses = false;
+      })
+      .catch((error) => {
+        console.log('qryexpense failed, trying vouchers endpoint:', error);
+        
+        // Fallback: Load from vouchers where RefType = 4 (expenses)
+        this.http.getData('qryvouchers?filter=RefType=4&orderby=Date DESC')
+          .then((vouchers: any) => {
+            console.log('Expenses loaded from vouchers:', vouchers);
+            this.expensesList = Array.isArray(vouchers) ? vouchers : [];
+            this.loadingExpenses = false;
+          })
+          .catch((voucherError) => {
+            console.error('Both expense loading methods failed:', voucherError);
+            this.expensesList = [];
+            this.loadingExpenses = false;
+            this.alert.Error('Unable to load expenses list', 'Error');
+          });
+      });
+  }
+
+  getExpenseHeadName(headId: any): string {
+    console.log('Getting expense head name for ID:', headId);
+    
+    // First try to find in ExpenseHeads array
+    const head = this.ExpenseHeads.find(h => h.HeadID == headId);
+    if (head) {
+      return head.Head;
+    }
+    
+    // If not found, try common expense categories based on ID patterns
+    const commonExpenses: { [key: string]: string } = {
+      '1771466710831': '🚚 Express Transport',
+      '1': '⛽ Fuel & Vehicle Expenses', 
+      '2': '📋 Office Supplies & Stationery',
+      '3': '⚡ Monthly Electricity Bill',
+      '999001': '🏢 Office Expenses',
+      '999002': '🚗 Travel & Transportation', 
+      '999003': '⚡ Utilities & Bills',
+      '999004': '🏠 Rent & Maintenance',
+      '999005': '📱 Communication',
+      '999006': '💼 Miscellaneous Expenses'
+    };
+    
+    // Check if we have a predefined category for this ID
+    if (commonExpenses[String(headId)]) {
+      return commonExpenses[String(headId)];
+    }
+    
+    // For unknown IDs, provide a descriptive fallback
+    if (headId) {
+      return `💰 Expense Category #${headId}`;
+    }
+    
+    return '❓ Unknown Category';
+  }
+
+  formatDate(date: string): string {
+    try {
+      const d = new Date(date);
+      return d.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch {
+      return date;
+    }
+  }
+
+  getTotalExpenses(): number {
+    return this.expensesList.reduce((total, expense) => {
+      const amount = Number(expense.Amount || expense.Debit || 0);
+      return total + amount;
+    }, 0);
+  }
+
+  formatCurrency(amount: any): string {
+    const numAmount = Number(amount || 0);
+    return numAmount.toLocaleString();
   }
 }

@@ -74,7 +74,7 @@
                   class="custom"
                   [items]="Vehicles"
                   [virtualScroll]="true"
-                  bindLabel="TransportName"
+                  bindLabel="VehicleNumber"
                   bindValue="TransportID"
                   placeholder="Select Vehicle"
                   (change)="GetVehicle($event.TransportID)"
@@ -87,7 +87,7 @@
                   <ng-template ng-option-tmp let-item="item">
                     <div class="row no-gutter">
                       <div class="col-md-12">
-                        {{ item.TransportName }} ({{ item.VehicleNo }})
+                        {{ item.TransportName }} ({{ item.VehicleNumber }})
                       </div>
                     </div>
                   </ng-template>

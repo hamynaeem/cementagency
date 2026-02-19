@@ -305,6 +305,7 @@ export class CashReceiptComponent implements OnInit {
         AcctID: voucherData.CustomerID,
         Details: voucherData.Description || 'Cash Receipt',
         Recvd: voucherData.Credit || 0,
+        
         Paid: voucherData.Debit || 0,
         Type: 1,
         RefID: Date.now(), // Use timestamp as RefID to avoid conflicts

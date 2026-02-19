@@ -17,7 +17,8 @@ import { VoucherSetting } from './vouchers.settings';
   styleUrls: ['./day-book.component.scss'],
 })
 export class DayBookComponent implements OnInit {
-  public data: object[];
+  public data: any[] = []; // Initialize as empty array 
+  public isLoading = false; // Add loading state
   Salesman: Observable<any[]>;
   public Routes: Observable<any[]>;
   public Customers: Observable<any[]>;
@@ -71,14 +72,52 @@ export class DayBookComponent implements OnInit {
       table = 'qryvouchers?orderby=VoucherID ';
     }
 
-    this.http.getData(table + '&filter=' + filter).then((r: any) => {
-      r.map((x) => {
-        x.IsPosted == '1' ? (x.Posted = 'Posted') : (x.Posted = 'Un Posted');
-      });
-      this.data = r;
+    // Add loading state and debug logs
+    this.isLoading = true;
+    console.log('📊 Day Book - Loading data for:', {
+      nWhat: this.nWhat,
+      table: table,
+      filter: filter,
+      settings: this.settings
     });
+
+    this.http.getData(table + '&filter=' + encodeURIComponent(filter))
+      .then((r: any) => {
+        this.isLoading = false;
+        console.log('📊 Day Book - Data received:', r);
+        
+        if (r && Array.isArray(r)) {
+          r.forEach((x: any) => {
+            x.IsPosted == '1' ? (x.Posted = 'Posted') : (x.Posted = 'Un Posted');
+          });
+          this.data = r;
+          console.log('✅ Day Book - Data processed successfully:', this.data.length, 'records');
+        } else if (r && typeof r === 'object' && !Array.isArray(r)) {
+          // Handle case where response is an object, not array
+          this.data = [r];
+          console.log('📊 Day Book - Single record received:', this.data);
+        } else {
+          console.warn('📊 Day Book - Invalid data received:', r);
+          this.data = [];
+        }
+      })
+      .catch((error) => {
+        this.isLoading = false;
+        console.error('📊 Day Book - Error loading data:', error);
+        this.data = [];
+        
+        // Show user friendly error with actionable advice
+        if (error.status === 500) {
+          console.warn('💡 Backend server error. Try: 1) Check PHP server is running 2) Setup database via http://localhost:8000/setup_sqlite.php');
+        } else if (error.status === 0) {
+          console.warn('💡 Connection error. Make sure: 1) PHP server is running on port 8000 2) Angular proxy is configured');
+        }
+        
+        // Uncomment to show alert to user:
+        // swal('Error', 'Failed to load data. Please check the console for details.', 'error');
+      });
   }
-  Clicked(e) {
+  Clicked(e: any) {
     let table: any = {};
     let url = '';
     console.log(e);
@@ -163,10 +202,23 @@ export class DayBookComponent implements OnInit {
 
         }
 
-        this.http.postTask(url, {}).then((r) => {
-          e.data.IsPosted = '1';
-          swal('Post!', 'Your data has been posted!', 'success');
-          this.FilterData();
+        swal({
+          text: 'Post this record? This action cannot be undone.',
+          icon: 'warning',
+          buttons: {
+            cancel: true,
+            confirm: true,
+          },
+        }).then((willPost) => {
+          if (willPost) {
+            this.http.postTask(url, {}).then((r) => {
+              e.data.IsPosted = '1';
+              swal('Posted!', 'Your data has been posted!', 'success');
+              this.FilterData();
+            }).catch((er) => {
+              swal('Oops!', 'Error while posting record', 'error');
+            });
+          }
         });
       } else {
         swal('Oops!', 'Can not post posted data', 'error');
@@ -258,7 +310,7 @@ export class DayBookComponent implements OnInit {
       });
     }
   }
-  TypeChange(e) {
+  TypeChange(e: any) {
     this.FilterData();
   }
 

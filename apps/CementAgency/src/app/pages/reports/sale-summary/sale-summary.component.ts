@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   GetDateJSON,
@@ -16,7 +16,7 @@ import { MyToastService } from '../../../services/toaster.server';
   styleUrls: ['./sale-summary.component.scss'],
 })
 export class SalesummaryComponent implements OnInit {
-  @ViewChild('RptTable') RptTable;
+  @ViewChild('RptTable') RptTable!: ElementRef;
 
   public Filter = {
     FromDate: GetDateJSON(),
@@ -45,7 +45,7 @@ export class SalesummaryComponent implements OnInit {
         label: 'Amount',
         fldName: 'Amount',
         sum: true,
-        valueFormatter: (d) => {
+        valueFormatter: (d: any) => {
           return formatNumber(d['Amount']);
         },
       },
@@ -54,8 +54,8 @@ export class SalesummaryComponent implements OnInit {
     Data: [],
   };
   sting = this.setting;
-  public data: object[];
-  public Items: any = this.cachedData.Products$;
+  public data: object[] = [];
+  public Items: any;
   constructor(
     private http: HttpBase,
     private cachedData: CachedDataService,
@@ -65,6 +65,7 @@ export class SalesummaryComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.Items = this.cachedData.Products$;
     this.FilterData();
   }
   PrintReport() {

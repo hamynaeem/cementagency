@@ -1,7 +1,20 @@
 <div widget class="card border-0 box-shadow">
   <div class="card-header transparent border-0 text-muted">
-    <h5 class="mb-3">Expense</h5>
-
+    <div class="row">
+      <div class="col">
+        <h5 class="mb-3">Expense</h5>
+      </div>
+      <div class="col-auto">
+        <button 
+          type="button" 
+          class="btn btn-info btn-sm"
+          (click)="toggleExpensesList()"
+          title="Show All Expenses"
+        >
+          <i class="fa fa-list"></i> {{ showExpensesList ? 'Hide' : 'Show' }} Expenses
+        </button>
+      </div>
+    </div>
   </div>
   <div class="card-block widget-body">
     <div class="container">
@@ -38,7 +51,7 @@
               <label for="cmbCustomer" class="form-label col-md-4">
                 Expense Head
               </label>
-              <div class="col-md-8">
+              <div class="col-md-6">
                 <ng-select
                   name="cmbHeads"
                   id="cmbHeads"
@@ -77,6 +90,16 @@
                   </small>
                 </div>
               </div>
+              <div class="col-md-2">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  (click)="showAddCategoryModal()"
+                  title="Add New Expense Category"
+                >
+                  <i class="fa fa-plus"></i> Add
+                </button>
+              </div>
             </div>
             <div class="row form-group">
               <label for="description" class="col-md-4 form-label"
@@ -91,6 +114,56 @@
                   [(ngModel)]="Voucher.Desc"
                   id="description"
                 />
+              </div>
+            </div>
+
+            <!-- Add Category Modal -->
+            <div *ngIf="showAddModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+              <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Add New Expense Category</h5>
+                    <button type="button" class="close" (click)="hideAddCategoryModal()">
+                      <span>&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label for="newCategoryName">Category Name:</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="newCategoryName"
+                        name="newCategoryName"
+                        [(ngModel)]="newCategory.name"
+                        placeholder="Enter expense category name..."
+                        #categoryInput
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="categoryType">Category Type:</label>
+                      <select 
+                        class="form-control" 
+                        id="categoryType"
+                        name="categoryType"
+                        [(ngModel)]="newCategory.type"
+                      >
+                        <option value="Expense">Expense</option>
+                        <option value="Operating">Operating</option>
+                        <option value="Administrative">Administrative</option>
+                        <option value="Miscellaneous">Miscellaneous</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" (click)="hideAddCategoryModal()">
+                      Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" (click)="addNewCategory()">
+                      <i class="fa fa-plus"></i> Add Category
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="row form-group">
@@ -124,7 +197,64 @@
             <div class="row no-gutter"></div>
           </form>
         </div>
-        <div class="col-md-6"></div>
+        <div class="col-md-6">
+          <!-- Expenses List -->
+          <div *ngIf="showExpensesList" class="card border-primary">
+            <div class="card-header bg-primary text-white">
+              <h6 class="mb-0">
+                <i class="fa fa-list"></i> All Expenses
+                <small class="float-right">{{ expensesList.length }} entries</small>
+              </h6>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+              <div *ngIf="loadingExpenses" class="text-center">
+                <i class="fa fa-spinner fa-spin"></i> Loading expenses...
+              </div>
+              
+              <div *ngIf="!loadingExpenses && expensesList.length === 0" class="text-center text-muted">
+                <i class="fa fa-inbox"></i><br>
+                No expenses found
+              </div>
+              
+              <div *ngFor="let expense of expensesList; let i = index" class="expense-item border-bottom py-2 mb-2">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div class="expense-details">
+                        <h6 class="mb-1 text-primary">
+                          {{ getExpenseHeadName(expense.CustomerID || expense.HeadID) }}
+                        </h6>
+                        <p class="mb-1 text-muted small">{{ expense.Description || expense.Desc }}</p>
+                        <small class="text-secondary">
+                          <i class="fa fa-calendar"></i> {{ formatDate(expense.Date) }}
+                          <span class="ml-2">
+                            <i class="fa fa-tag"></i> #{{ expense.VoucherID || expense.ExpendID || (i + 1) }}
+                          </span>
+                        </small>
+                      </div>
+                      <div class="expense-amount text-right">
+                        <span class="badge badge-danger font-weight-bold">
+                          Rs {{ formatCurrency(expense.Amount || expense.Debit || 0) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Total Amount -->
+              <div *ngIf="expensesList.length > 0" class="border-top pt-2 mt-2">
+                <div class="row">
+                  <div class="col-12 text-right">
+                    <strong class="text-primary">
+                      Total Expenses: Rs {{ getTotalExpenses().toLocaleString() }}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -108,17 +108,28 @@ export class SaleLedgerComponent implements OnInit {
     if (this.Filter.CustomerID)
       filter += ' and CustomerID=' + this.Filter.CustomerID;
 
-
-
+    // Include CustomerName in the fields to fetch
     let flds =
-      'Date,BookingID, ProductName, Qty, SPrice, Amount';
+      'Date,BookingID,CustomerID,CustomerName,ProductName,Qty,SPrice,Amount';
+
+    console.log('🏪 Sale Ledger - Loading data with filter:', filter);
 
     this.http
       .getData(
-        `qrysalereport?orderby=Date,BookingID&flds=${flds}&filter=${filter}`
+        `qrysalereport?orderby=Date,BookingID&flds=${flds}&filter=${encodeURIComponent(filter)}`
       )
       .then((r: any) => {
-        this.data = r;
+        console.log('🏪 Sale Ledger - Data received:', r);
+        if (r && Array.isArray(r)) {
+          this.data = r;
+        } else {
+          console.warn('🏪 Sale Ledger - Invalid data received:', r);
+          this.data = [];
+        }
+      })
+      .catch((error) => {
+        console.error('🏪 Sale Ledger - Error loading data:', error);
+        this.data = [];
       });
   }
   Clicked(e: any) {}
